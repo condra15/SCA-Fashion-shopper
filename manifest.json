@@ -1,0 +1,12 @@
+{
+    "name": "SCA Fashion Shopper",
+    "version": "1.0.0",
+    "description": "This is an extension to help determine the color season of any clothes you are shopping for or wearing",
+    "permissions": ["storage", "tabs"],
+    "manifest_version": 3,
+    "author": "Chris Yankah",
+    "action": {
+        "default_popup": "index.html",
+        "default_title": "Seasonal Color Shopper"
+    }
+}
