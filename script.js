@@ -44,7 +44,6 @@ function hextohsl (hex) {
 function calculateDistance(x1, y1, x2, y2) {
     const xDiff = x2 - x1;
     const yDiff = y2 - y1;
-    console.log(Math.sqrt(xDiff * xDiff + yDiff * yDiff))
     return Math.sqrt(xDiff * xDiff + yDiff * yDiff);
 }
 
@@ -54,8 +53,8 @@ function findSeasonOfSmallestValue(dictionary) {
   
     for (const index in dictionary) {
       if (dictionary.hasOwnProperty(index)) {
-        if (dictionary[index][1] < smallestValue) {
-          smallestValue = dictionary[index][1];
+        if (dictionary[index] < smallestValue) {
+          smallestValue = dictionary[index];
           season = index;
         }
       }
@@ -63,29 +62,25 @@ function findSeasonOfSmallestValue(dictionary) {
     return season;
 }
 
+function getSeasonWithHighestValue(dictionary) {
+    let highestValue = -Infinity;
+    let season = null;
+  
+    for (const index in dictionary) {
+        if (dictionary.hasOwnProperty(index)) {
+          if (dictionary[index] > highestValue) {
+            highestValue = dictionary[index];
+            season = index;
+          }
+        }
+      }
+    return season;
+  }
+  
+
 function scalogic(hue, sat, lum) {
     const x = sat;
     const y = lum;
-    var win = 0;
-    var spr = 0;
-    var summ = 0;
-    var aut = 0;
-    var neutral = 0;
-
-    var bright = 0;
-    var light = 0;
-    var soft = 0;
-    var dark = 0;
-    var tru = 0;
-    
-    // Percentage Meanings:
-    // 0% -  Bad
-    // 30% - Not Okay
-    // 50% - Okay
-    // 65% - Good
-    // 80% - Great
-    // 100% - Perfect
-
 
     // summer = high lum, low sat
     // winter = low lum, high sat
@@ -97,26 +92,8 @@ function scalogic(hue, sat, lum) {
     // low l -> dark
     // high l -> light
 
-    // Should make the rating like a circle. Goes from 100 in a season and 
-    // subseason then decreases by 25 for each subsequent distance. Then
-    // add a little extera below for the neutral colors.
-    // The percentage will be the highest subseason of that season.
-    // Will possible change this system from numbers to ticks or number of circles in the future.
-    // 5 ticks being 100 and 1 being 0
+    // Should make the rating like a circle
 
-    // Combos
-    // 75,100,75  (4)  7
-    // 100,75,50 (3.5) 6
-    // 75,50,25 (2.5) 3.5
-    // 50,25,0 (1.5) 1.5
-    // 25,0,0 (0.5) 0.5
-
-    // 100 - 3
-    // 75 - 2
-    // 50 - 1
-    // 25 - 0.5
-
-    // Neutrals bring anything below to a 2.5
     // Saturation is x, lum is y
     const lum_dict = {
         "Light Summer":function(x,y) {
@@ -205,170 +182,86 @@ function scalogic(hue, sat, lum) {
         },
     }
     
-    var distance_dict= {
-        "Bright Spring":[0,calculateDistance(x,lum_dict["Bright Spring"](x,y),x,y)],
-        "True Spring":[0,calculateDistance(x,lum_dict["True Spring"](x,y),x,y)],
-        "Light Spring":[0,calculateDistance(x,lum_dict["Light Spring"](x,y),x,y)],
-        "Light Summer":[0,calculateDistance(x,lum_dict["Light Summer"](x,y),x,y)],
-        "True Summer":[0,calculateDistance(x,lum_dict["True Summer"](x,y),x,y)],
-        "Soft Summer":[0,calculateDistance(x,lum_dict["Soft Summer"](x,y),x,y)],
-        "Soft Autumn":[0,calculateDistance(x,lum_dict["Soft Autumn"](x,y),x,y)],
-        "True Autumn":[0,calculateDistance(x,lum_dict["True Autumn"](x,y),x,y)],
-        "Dark Autumn":[0,calculateDistance(x,lum_dict["Dark Autumn"](x,y),x,y)],
-        "Dark Winter":[0,calculateDistance(x,lum_dict["Dark Winter"](x,y),x,y)],
-        "True Winter":[0,calculateDistance(x,lum_dict["True Winter"](x,y),x,y)],
-        "Bright Winter":[0,calculateDistance(x,lum_dict["Bright Winter"](x,y),x,y)],
+    const distance_dict= {
+        "Bright Spring":calculateDistance(x,lum_dict["Bright Spring"](x,y),x,y),
+        "True Spring":calculateDistance(x,lum_dict["True Spring"](x,y),x,y),
+        "Light Spring":calculateDistance(x,lum_dict["Light Spring"](x,y),x,y),
+        "Light Summer":calculateDistance(x,lum_dict["Light Summer"](x,y),x,y),
+        "True Summer":calculateDistance(x,lum_dict["True Summer"](x,y),x,y),
+        "Soft Summer":calculateDistance(x,lum_dict["Soft Summer"](x,y),x,y),
+        "Soft Autumn":calculateDistance(x,lum_dict["Soft Autumn"](x,y),x,y),
+        "True Autumn":calculateDistance(x,lum_dict["True Autumn"](x,y),x,y),
+        "Dark Autumn":calculateDistance(x,lum_dict["Dark Autumn"](x,y),x,y),
+        "Dark Winter":calculateDistance(x,lum_dict["Dark Winter"](x,y),x,y),
+        "True Winter":calculateDistance(x,lum_dict["True Winter"](x,y),x,y),
+        "Bright Winter":calculateDistance(x,lum_dict["Bright Winter"](x,y),x,y),
+    };
+    var seasons_dict= {
+        "Bright Spring":0,
+        "True Spring":0,
+        "Light Spring":0,
+        "Light Summer":0,
+        "True Summer":0,
+        "Soft Summer":0,
+        "Soft Autumn":0,
+        "True Autumn":0,
+        "Dark Autumn":0,
+        "Dark Winter":0,
+        "True Winter":0,
+        "Bright Winter":0,
     };
 
     const season = findSeasonOfSmallestValue(distance_dict);
-    // for (let i=0)
-    
-    
-    // -----------------------
+    seasons_dict[season]=4;
+    const keys = Object.keys(seasons_dict);
+    var index = keys.indexOf(season);
+    var score = 3;
+    for (let i=1; i<4; i++){
+        var keydown = keys.at(index-i);
+        var keyup = keys.at(index+i);
 
-    if (sat > 50) {
-        win += 33.333;
-        spr += 33.333;
-        if (sat < 56){
-            summ += 17;
-            aut += 17;
-        }
-    } else {
-        summ += 33.333;
-        aut += 33.333;
-        if (sat > 44){
-            win += 17;
-            spr += 17;
-        }
-    }
-    if (lum > 50) {
-        summ += 33.333;
-        spr += 33.333;
-        if (lum < 56){
-            win += 17;
-            aut += 17;
-        }
-    } else {
-        win += 33.333;
-        aut += 33.333;
-        if (lum > 44){
-            summ += 17;
-            spr += 17;
-        }
-    };
-
-
-    var seasons_ouput = {'winter': win, 'spring':spr, 'summer':summ, 'autumn':aut, 'neutral':neutral};
-    var lum_abs = Math.abs(lum-50) - Math.abs(sat-50);
-    switch (Object.keys(seasons_ouput).reduce(function(a, b){ return seasons_ouput[a] > seasons_ouput[b] ? a : b })) {
-        // 15 is based on a range of -46 to 46 divided into 3 sections for the seasons
-        case 'winter':
-            win += 33.333;
-            if (lum_abs >= 17){
-                dark += 100;
-                tru += 50;
-                bright += 25;
-                aut += 33.333;
-            } else if (lum_abs <= -17) {
-                dark += 25;
-                tru += 50;
-                bright += 100;
-                spr += 33.333;
-            } else {
-                dark += 50;
-                tru += 100;
-                bright += 50;
-            };
-            break;
-        case 'spring':
-            spr += 33.333;
-            if (lum_abs >= 17){
-                light += 100;
-                tru += 50;
-                bright += 25;
-                summ += 33.333;
-            } else if (lum_abs <= -17) {
-                light += 25;
-                tru += 50;
-                bright += 100;
-                win += 33.333;
-            } else {
-                light += 50;
-                tru += 100;
-                bright += 50;
-            };
-            break;
-        case 'summer':
-            summ += 33.333;
-            if (lum_abs >= 17){
-                light += 100;
-                tru += 50;
-                soft += 25;
-                spr += 33.333;
-            } else if (lum_abs <= -17) {
-                light += 25;
-                tru += 50;
-                soft += 100;
-                aut += 33.333;
-            } else {
-                light += 50;
-                tru += 100;
-                soft += 50;
-            };
-            break;
-        case 'autumn':
-            aut += 33.333;
-            if (lum_abs >= 17){
-                dark += 100;
-                tru += 50;
-                soft += 25;
-                win += 33.333;
-            } else if (lum_abs <= -17) {
-                dark += 25;
-                tru += 50;
-                soft += 100;
-                summ += 33.333;
-            } else {
-                dark += 50;
-                tru += 100;
-                soft += 50;
-                
-            };
-            break;
-        default:
-            dark += 0;
-            tru += 0;
-            soft += 0;
-            light += 0;
-            bright += 0;
-    };
-    
-
-    var seasons_ouput = {'winter': Math.ceil(win), 'spring':Math.ceil(spr), 'summer':Math.ceil(summ), 'autumn':Math.ceil(aut), 'neutral':Math.ceil(neutral)};
-    var flow_output = {'bright':bright, 'light':light, 'soft':soft, 'dark':dark, 'tru':tru};
-    if (sat<5 || lum<5 || lum >95){
-        for (var [key, value] of Object.entries(seasons_ouput)) {
-            if (value<99) {
-                seasons_ouput[key]+=50;
-            };
-          };
-        for (var [key, value] of Object.entries(flow_output)) {
-            if (value<99) {
-                flow_output[key]+=50;
-            };
-          };
-        seasons_ouput["neutral"] = 101;
-    };
-
-    if (Object.values(seasons_ouput).some(el => el > 101)) {
-        for (const [key, value] of Object.entries(seasons_ouput)) {
-            if (value > 101){
-                seasons_ouput[key] = 100
-            }
-        }
+        seasons_dict[keydown]= score;
+        seasons_dict[keyup]= score;
+        score-=1;
     }
 
-    return {'0':seasons_ouput, '1':flow_output};
+
+    // Neutrals:
+    // stage 1 y=5,98  x=4: adds +1 to any 0
+    // stage 2 y=4,99  x=3: adds additional +1 to any below 2
+    // stage 3 y=3  x=2: adds additional +1 to any below 3
+    // stage 4 y=2,1,0,100 and x=0,1: adds additional +1 to any below 4
+    var change = 0;
+    if (x<=6 || y<=5 || y>=98){
+        if (([0,1].includes(x)) || ([100,0,1,2].includes(y))){
+            change = 4;
+        } else if (([2,3].includes(x)) || (y==3)){
+            change = 3;
+        } else if (([4,5].includes(x)) || ([4,99].includes(y))){
+            change = 2;
+        } else if ((x==6) || ([5,98].includes(y))){
+            change = 1;
+        }
+        for (var [key, value] of Object.entries(seasons_dict)) {
+            if (value<change){
+                seasons_dict[key]=change;
+            };
+        };
+        seasons_dict.neutral = 5;
+    };
+
+    if (x <=10 & (y<=10 || y >=96)){
+        change = 3;
+        for (var [key, value] of Object.entries(seasons_dict)) {
+            if (value<change){
+                seasons_dict[key]=change;
+            };
+        };
+        seasons_dict.neutral = 5;
+    };
+
+    console.log(seasons_dict);
+    return seasons_dict;
 };
 
 function dropper() {
@@ -379,17 +272,18 @@ function dropper() {
     const $info = document.querySelectorAll('.info');
     const $hexInfo = document.querySelector('.hex-info');
     const $scaInfo = document.querySelector('.sca-info');
-    const $winter = document.querySelector('.winter');
-    const $autumn = document.querySelector('.autumn');
-    const $spring = document.querySelector('.spring');
-    const $summer = document.querySelector('.summer');
-    const $bright = document.querySelectorAll('.bright');
-    const $light = document.querySelectorAll('.light');
-    const $soft = document.querySelectorAll('.soft');
-    const $dark = document.querySelectorAll('.dark');
-    const $tru = document.querySelectorAll('.tru');
-    var all = document.getElementsByTagName("*");
-
+    const $softautumn = document.querySelector('.softautumn');
+    const $darkwinter = document.querySelector('.darkwinter');
+    const $brightspring = document.querySelector('.brightspring');
+    const $lightsummer = document.querySelector('.lightsummer');
+    const $truautumn = document.querySelector('.truautumn');
+    const $truwinter = document.querySelector('.truwinter');
+    const $truspring = document.querySelector('.truspring');
+    const $trusummer = document.querySelector('.trusummer');
+    const $darkautumn = document.querySelector('.darkautumn');
+    const $brightwinter = document.querySelector('.brightwinter');
+    const $lightspring = document.querySelector('.lightspring');
+    const $softsummer = document.querySelector('.softsummer');
     
     function showResult(hex = '#FFFFFF'){
         $infobox.style.backgroundColor = hex;
@@ -408,46 +302,33 @@ function dropper() {
             $info.forEach(element => {
                 element.style.color = "white";
             });
-            // for (const cell of all) {
-            //     cell.style.color = "white"
-            // }
         }
         var output = scalogic(parseFloat(hsl.h),parseFloat(hsl.s),parseFloat(hsl.l));
-        //seasons = output['0'];
-        var seasons = Object.fromEntries(
-            Object.entries(output['0']).sort(([,a],[,b]) => b-a)
-        );
-        var top_season = Object.keys(seasons)[0]
-        $scaInfo.innerText = top_season
-        $winter.innerText = parseFloat(seasons.winter) + '%';
-        $summer.innerText = parseFloat(seasons.summer) + '%';
-        $autumn.innerText = parseFloat(seasons.autumn) + '%';
-        $spring.innerText = parseFloat(seasons.spring) + '%';
-        $bright.forEach(element => {
-            element.innerText = parseFloat(output['1']['bright']);
-        });
-        $light.forEach(element => {
-            element.innerText = parseFloat(output['1']['light']);
-        });
-        $soft.forEach(element => {
-            element.innerText = parseFloat(output['1']['soft']);
-        });
-        $dark.forEach(element => {
-            element.innerText = parseFloat(output['1']['dark']);
-        });
-        $tru.forEach(element => {
-            element.innerText = '0';
-        });
+        var top_season = getSeasonWithHighestValue(output);
+        $scaInfo.innerText = top_season;
+        $softautumn.innerText = output["Soft Autumn"];
+        $darkwinter.innerText = output["Dark Winter"];
+        $brightspring.innerText = output["Bright Spring"];
+        $lightsummer.innerText = output["Light Summer"];
+        $truautumn.innerText = output["True Autumn"];
+        $truwinter.innerText = output["True Winter"];
+        $truspring.innerText = output["True Spring"];
+        $trusummer.innerText = output["True Summer"];
+        $darkautumn.innerText = output["Dark Autumn"];
+        $brightwinter.innerText = output["Bright Winter"];
+        $lightspring.innerText = output["Light Spring"];
+        $softsummer.innerText = output["Soft Summer"];
 
-        if (top_season == 'neutral'){
-            $tru.forEach(element => {
-                element.innerText = '50';
-            });
-            var second_season = Object.keys(seasons)[1];
-            document.querySelector(`.${second_season}true`).innerText = parseFloat(output['1']['tru']);
+
+        if (output.neutral){
+            // $tru.forEach(element => {
+            //     element.innerText = '50';
+            // });
+            // var second_season = Object.keys(seasons)[1];
+            // document.querySelector(`.${second_season}true`).innerText = parseFloat(output['1']['tru']);
         } else {
-            document.querySelector(`.${top_season}true`).innerText = parseFloat(output['1']['tru']);
-        }
+            // document.querySelector(`.${top_season}true`).innerText = parseFloat(output['1']['tru']);
+        };
     };
 
     function openDropper() {
