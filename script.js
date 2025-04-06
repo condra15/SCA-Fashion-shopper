@@ -78,7 +78,7 @@ function getSeasonWithHighestValue(dictionary) {
   }
   
 
-function scalogic(hue, sat, lum) {
+function scalogic(sat, lum) {
     const x = sat;
     const y = lum;
 
@@ -97,87 +97,63 @@ function scalogic(hue, sat, lum) {
     // Saturation is x, lum is y
     const lum_dict = {
         "Light Summer":function(x,y) {
-                if (y>50 & x<=50) {
-                    return (3.732*x)-136.607
-                } else {
-                    return 500
-                }
-            },
+            if (y>50 & x<=50) {
+                return (-3.732*x)+236.607
+            }
+        },
         "True Summer":function(x,y) {
             if (y>50 & x<=50) {
-                return x
-            } else {
-                return 500
+                return -x+100
             }
         },
         "Soft Summer":function(x,y) {
             if (y>50 & x<=50) {
-                return (0.2679*x)+36.605
-            } else {
-                return 500
+                return (-0.2679*x)+63.395
             }
         },
         "Bright Spring":function(x,y) {
             if (y>50 & x>50) {
-                return (-0.2679*x)+63.395
-            } else {
-                return 500
+                return (0.2679*x)+36.605
             }
         },
         "True Spring":function(x,y) {
             if (y>50 & x>50) {
-                return -x+100
-            } else {
-                return 500
+                return x
             }
         },
         "Light Spring":function(x,y) {
             if (y>50 & x>50) {
-                return (-3.732*x)+236.607
-            } else {
-                return 500
+                return (3.732*x)-136.607
             }
         },
         "Dark Winter":function(x,y) {
-                if (y<=50 & x>50) {
-                    return (3.732*x)-136.607
-                } else {
-                    return 500
-                }
-            },
+            if (y<=50 & x>50) {
+                return (-3.732*x)+236.607
+            }
+        },
         "True Winter":function(x,y) {
             if (y<=50 & x>50) {
-                return x
-            } else {
-                return 500
+                return -x+100
             }
         },
         "Bright Winter":function(x,y) {
             if (y<=50 & x>50) {
-                return (0.2679*x)+36.605
-            } else {
-                return 500
+                return (-0.2679*x)+63.395
             }
         },
         "Soft Autumn":function(x,y) {
             if (y<=50 & x<=50) {
-                return (-0.2679*x)+63.395
-            } else {
-                return 500
+                return (0.2679*x)+36.605
             }
         },
         "True Autumn":function(x,y) {
             if (y<=50 & x<=50) {
-                return -x+100
-            } else {
-                return 500
+                return x
             }
         },
         "Dark Autumn":function(x,y) {
             if (y<=50 & x<=50) {
-                return (-3.732*x)+236.607
-            } else {
-                return 500
+                return (3.732*x)-136.607
             }
         },
     }
@@ -196,6 +172,7 @@ function scalogic(hue, sat, lum) {
         "True Winter":calculateDistance(x,lum_dict["True Winter"](x,y),x,y),
         "Bright Winter":calculateDistance(x,lum_dict["Bright Winter"](x,y),x,y),
     };
+    console.log(distance_dict);
     var seasons_dict= {
         "Bright Spring":0,
         "True Spring":0,
@@ -266,7 +243,7 @@ function scalogic(hue, sat, lum) {
 
 function dropper() {
     const eyeDropper = new EyeDropper();
-    const $btn = document.querySelector('.btn');
+    const $find = document.querySelector('.find');
     const $table = document.querySelector('.tableId');
     const $infobox = document.querySelector('.infobox');
     const $info = document.querySelectorAll('.info');
@@ -303,7 +280,7 @@ function dropper() {
                 element.style.color = "white";
             });
         }
-        var output = scalogic(parseFloat(hsl.h),parseFloat(hsl.s),parseFloat(hsl.l));
+        var output = scalogic(parseFloat(hsl.s),parseFloat(hsl.l));
         var top_season = getSeasonWithHighestValue(output);
         $scaInfo.innerText = top_season;
         $softautumn.innerText = output["Soft Autumn"];
@@ -318,17 +295,6 @@ function dropper() {
         $brightwinter.innerText = output["Bright Winter"];
         $lightspring.innerText = output["Light Spring"];
         $softsummer.innerText = output["Soft Summer"];
-
-
-        if (output.neutral){
-            // $tru.forEach(element => {
-            //     element.innerText = '50';
-            // });
-            // var second_season = Object.keys(seasons)[1];
-            // document.querySelector(`.${second_season}true`).innerText = parseFloat(output['1']['tru']);
-        } else {
-            // document.querySelector(`.${top_season}true`).innerText = parseFloat(output['1']['tru']);
-        };
     };
 
     function openDropper() {
@@ -343,7 +309,7 @@ function dropper() {
             });
     }
 
-    $btn.addEventListener('click', openDropper);
+    $find.addEventListener('click', openDropper);
 }
 
 function init() {
