@@ -36,8 +36,6 @@ function hextohsl (hex) {
     var lum = Math.round(l);
     var hue = Math.round(360*h);
 
-    var colorInHSL = 'hsl(' + hue + ', ' + sat + '%, ' + lum + '%)';
-    console.log(colorInHSL);
     return {h:hue,s:sat,l:lum};
 }
 
