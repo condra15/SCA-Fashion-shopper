@@ -3,44 +3,54 @@
 <script type="module" src="script.js"></script>
 
 <div class="container">
-    <!-- <div class="inner"> -->
-        <h1 class="heading">SCA Fashion Shopper</h1>
-        <div class="explanation"> For you! &gt; 80%   Alright &gt; 60%   Don't &lt; 50% </div>
-        <div class="btn-box">
-            <button class="btn">Find Season</button>
+    <h1 class="heading">SCA Fashion Shopper</h1>
+    <div class="btn-box">
+        <select name="picker" class="btn pick" id="picker">
+            <option disabled selected>Select your season:</option>
+            <option value="Dark Winter">Dark Winter</option>
+            <option value="True Winter">True Winter</option>
+            <option value="Bright Winter">Bright Winter</option>
+            <option value="Bright Spring">Bright Spring</option>
+            <option value="True Spring">True Spring</option>
+            <option value="Light Spring">Light Spring</option>
+            <option value="Light Summer">Light Summer</option>
+            <option value="True Summer">True Summer</option>
+            <option value="Soft Summer">Soft Summer</option>
+            <option value="Soft Autumn">Soft Autumn</option>
+            <option value="True Autumn">True Autumn</option>
+            <option value="Dark Autumn">Dark Autumn</option>
+        </select>
+        <button class="btn find">Find Color Season</button>
+    </div>
+    <div class="infobox">
+        <p class="info hex">Color: - <br></p>
+        <p class="info season">Select your season<br></p>
+    </div>
+    <div class="bottom">
+        <div class="sca-info">Color<br>Season</div>
+        <div class="wheel">
+            <span style="--i:0;"></span>
+            <span style="--i:1;"></span>
+            <span style="--i:2;"></span>
+            <span style="--i:3;"></span>
+            <span style="--i:4;"></span>
+            <span style="--i:5;"></span>
+            <div class="words">
+                <b style="--i:0;"> <div>Bright<br>Spring</div><br><div class="brightspring outputs">-</div></b>
+                <b style="--i:1;"> <div>True<br>Spring</div><br><div class="truspring outputs">-</div></b>
+                <b style="--i:2;"> <div>Light<br>Spring</div><br><div class="lightspring outputs">-</div></b>
+                <b style="--i:3;"> <div style="transform: rotate(180deg);">Light<br>Summer</div><br><div style="transform: rotate(180deg);" class="lightsummer outputs">-</div></b>
+                <b style="--i:4;"> <div style="transform: rotate(180deg);">True<br>Summer</div><br><div style="transform: rotate(180deg);" class="trusummer outputs">-</div></b>
+                <b style="--i:5;"> <div style="transform: rotate(180deg);">Soft<br>Summer</div><br><div style="transform: rotate(180deg);" class="softsummer outputs">-</div></b>
+                <b style="--i:6;"> <div style="transform: rotate(180deg);">Soft<br>Autumn</div><br><div style="transform: rotate(180deg);" class="softautumn outputs">-</div></b>
+                <b style="--i:7;"> <div style="transform: rotate(180deg);">True<br>Autumn</div><br><div style="transform: rotate(180deg);" class="truautumn outputs">-</div></b>
+                <b style="--i:8;"> <div style="transform: rotate(180deg);">Dark<br>Autumn</div><br><div style="transform: rotate(180deg);" class="darkautumn outputs">-</div></b>
+                <b style="--i:9;"> <div>Dark<br>Winter</div><br><div class="darkwinter outputs">-</div></b>
+                <b style="--i:10;"> <div>True<br>Winter</div><br><div class="truwinter outputs">-</div></b>
+                <b style="--i:11;"> <div>Bright<br>Winter</div><br><div class="brightwinter outputs">-</div></b>
+            </div>
         </div>
-        <div class="infobox">
-            <p class="info">Selected color: <br> <strong><span class="hex-info">None!</span></strong></p>
-            <p class="info">Color Season: <br> <strong><span class="sca-info">None!</span></strong></p>
-        </div>
-
- <table class="tableId">
-    <tr class="seasons">
-        <th class="season autumncell">Autumn:<br> <span class="autumn">-</span></th>
-        <th class="season ">Winter:<br> <span class="winter">-</span></th>
-        <th class="season">Spring:<br> <span class="spring">-</span></th>
-        <th class="season">Summer:<br> <span class="summer">-</span></th>
-    </tr>
-    <tr class="advanced">
-        <td class="season flow ">Soft:<br><strong><span class="soft">-</span></strong></td>
-        <td class="season flow">Dark:<br><strong><span class="dark">-</span></strong></td>
-        <td class="season flow">Bright:<br><strong><span class="bright">-</span></strong></td>
-        <td class="season flow">Light:<br><strong><span class="light">-</span></strong></td>
-    </tr>
-    <tr class="advanced">
-        <td class="season flow">True:<br><strong><span class="tru autumntrue">-</span></strong></td>
-        <td class="season flow">True:<br><strong><span class="tru wintertrue">-</span></strong></td>
-        <td class="season flow">True:<br><strong><span class="tru springtrue">-</span></strong></td>
-        <td class="season flow">True:<br><strong><span class="tru summertrue">-</span></strong></td>
-        
-    </tr>
-    <tr class="advanced">
-        <td class="season flow">Dark:<br><strong><span class="dark">-</span></strong></td>
-        <td class="season flow">Bright:<br><strong><span class="bright">-</span></strong></td>
-        <td class="season flow">Light:<br><strong><span class="light">-</span></strong></td>
-        <td class="season flow">Soft:<br><strong><span class="soft">-</span></strong></td>
-    </tr>
- </table>
+    </div>
     <!-- <div class="palette">
         <div class="swatch"></div>
         <div class="swatch"></div>
