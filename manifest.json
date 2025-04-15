@@ -1,7 +1,7 @@
 {
     "name": "SCA Fashion Shopper",
     "version": "1.0.0",
-    "description": "This is an extension to help determine the color season of any clothes you are shopping for or wearing",
+    "description": "This is an extension to help determine the color season of any clothes you are shopping for or wearing using the seasonal color analysis method.",
     "permissions": ["storage", "tabs"],
     "manifest_version": 3,
     "author": "Chris Yankah",
