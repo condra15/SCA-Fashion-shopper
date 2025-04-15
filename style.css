@@ -11,6 +11,7 @@
 .heading {
     font-size: 1.5 rem;
     font-weight: 200;
+    margin: 8px;
 }
 
 @media only screen and (max-width: 42.5rem) {
@@ -34,9 +35,9 @@
     justify-content: center;
     align-items: center;
     font-size: 9px;
-    width: 70px;
+    width: 70%;
     height: 15px;
-    margin: auto auto auto auto;
+    /* margin: auto auto auto auto; */
     outline: 0;
     cursor: pointer;
     transform: scale(1.001);
@@ -71,57 +72,84 @@
 .infobox {
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: space-evenly;
     align-items: center;
 }
 
 .info {
-    margin: 10px;
+    margin: 5px;
     line-height: 1.5;
     color: black;
-}
-
-.info strong {
     text-transform: uppercase;
-    font-size: 1rem;
+    font-size: 0.9rem;
 }
 
-.season {
-    display: inline-block;
-    margin-right: 1px; /* add spacing between items */
-    margin-top: 3px;
-    line-height: 1.5;
-    color: black;
-    font-size: 13px;
-}
-
-.flow {
-    color: black;
-    display: inline-block;
-    margin-right: 1px; /* add spacing between items */
-}
-
-table, th, td {
-    border: 1px solid black;
-}
-
-  
-tr {
-    display: table;
+.bottom{
+    position: relative;
     width: 100%;
+    height: 280px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: whitesmoke;
+}
+
+.wheel {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    align-items: center ;
+    justify-content: center;
+    border: 1px dashed;
+    border-radius: 50%;
+    margin: 2px;
+    transition: 5s ease-out;
+    overflow: hidden;
+}
+
+.wheel span {
+    position: absolute;
+    left: calc(50% - 1px);
+    width: 1px;
+    height: 100%;
+    border: 1px solid;
+    transform: rotate(calc(30deg * var(--i)));
+    z-index: 1000;
+}
+
+.bottom .sca-info {
+    position: absolute;
+    transform: translate(-50% -50%);
+    background: whitesmoke;
+    border-radius: 50%;
+    height: 40%;
+    width: 40%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    border: black 1px solid;
+    text-transform: uppercase;
+}
+
+.words {
+    position: absolute;
+    inset: 0;
+    rotate: 15deg;
     background-color: whitesmoke;
 }
 
-th {
-    width: 23%;
+.words b {
+    position: absolute;
+    inset: 10px;
+    transform: rotate(calc(30deg * var(--i)));
+    text-align: center;
+    font-size: 12px;
+    color: black;
 }
 
-table {
-    width: 100%;
-}
-
-td {
-    width:23%
+.outputs {
+    font-size: 10px;
 }
 
 /* .palette {
