@@ -76,6 +76,22 @@ function getSeasonWithHighestValue(dictionary) {
       }
     return season;
   }
+
+function pickNeutral(seasons_dict,change,neutral_v=6){
+    for (var [key, value] of Object.entries(seasons_dict)) {
+        if (value<change){
+            seasons_dict[key]=change;
+        };
+    };
+    const neutral_type = {
+        "5":"Pure Neutral",
+        "4":"Pure Neutral",
+        "3":"Half Neutral",
+        "2":"Near Neutral",
+    }
+    seasons_dict[neutral_type[change]] = neutral_v
+    return seasons_dict
+}
   
 
 function scalogic(sat, lum) {
@@ -172,30 +188,30 @@ function scalogic(sat, lum) {
         "True Winter":calculateDistance(x,lum_dict["True Winter"](x,y),x,y),
         "Bright Winter":calculateDistance(x,lum_dict["Bright Winter"](x,y),x,y),
     };
-    console.log(distance_dict);
     var seasons_dict= {
-        "Bright Spring":0,
-        "True Spring":0,
-        "Light Spring":0,
-        "Light Summer":0,
-        "True Summer":0,
-        "Soft Summer":0,
-        "Soft Autumn":0,
-        "True Autumn":0,
-        "Dark Autumn":0,
-        "Dark Winter":0,
-        "True Winter":0,
-        "Bright Winter":0,
+        "Bright Spring":1,
+        "True Spring":1,
+        "Light Spring":1,
+        "Light Summer":1,
+        "True Summer":1,
+        "Soft Summer":1,
+        "Soft Autumn":1,
+        "True Autumn":1,
+        "Dark Autumn":1,
+        "Dark Winter":1,
+        "True Winter":1,
+        "Bright Winter":1,
     };
 
     const season = findSeasonOfSmallestValue(distance_dict);
-    seasons_dict[season]=4;
+    seasons_dict[season]=5;
     const keys = Object.keys(seasons_dict);
     var index = keys.indexOf(season);
-    var score = 3;
+    var score = 4;
     for (let i=1; i<4; i++){
         var keydown = keys.at(index-i);
-        var keyup = keys.at(index+i);
+        var height = index+i>=12 ? 12:0;
+        var keyup = keys.at(index-height+i);
 
         seasons_dict[keydown]= score;
         seasons_dict[keyup]= score;
@@ -204,6 +220,7 @@ function scalogic(sat, lum) {
 
 
     // Neutrals:
+    // Near Neutral, Half Nautral, Pure Neutral
     // stage 1 y=5,98  x=4: adds +1 to any 0
     // stage 2 y=4,99  x=3: adds additional +1 to any below 2
     // stage 3 y=3  x=2: adds additional +1 to any below 3
@@ -211,43 +228,28 @@ function scalogic(sat, lum) {
     var change = 0;
     if (x<=6 || y<=5 || y>=98){
         if (([0,1].includes(x)) || ([100,0,1,2].includes(y))){
-            change = 4;
+            change = 5;
         } else if (([2,3].includes(x)) || (y==3)){
-            change = 3;
+            change = 4;
         } else if (([4,5].includes(x)) || ([4,99].includes(y))){
-            change = 2;
+            change = 3;
+        } else if (x <=10 & (y<=10 || y >=96)){
+            change = 3;
         } else if ((x==6) || ([5,98].includes(y))){
-            change = 1;
+            change = 2;
         }
-        for (var [key, value] of Object.entries(seasons_dict)) {
-            if (value<change){
-                seasons_dict[key]=change;
-            };
-        };
-        seasons_dict.neutral = 5;
+        seasons_dict = pickNeutral(seasons_dict, change)
     };
-
-    if (x <=10 & (y<=10 || y >=96)){
-        change = 3;
-        for (var [key, value] of Object.entries(seasons_dict)) {
-            if (value<change){
-                seasons_dict[key]=change;
-            };
-        };
-        seasons_dict.neutral = 5;
-    };
-
-    console.log(seasons_dict);
     return seasons_dict;
 };
 
 function dropper() {
     const eyeDropper = new EyeDropper();
     const $find = document.querySelector('.find');
-    const $table = document.querySelector('.tableId');
     const $infobox = document.querySelector('.infobox');
     const $info = document.querySelectorAll('.info');
-    const $hexInfo = document.querySelector('.hex-info');
+    const $season = document.querySelector('.season');
+    const $hexInfo = document.querySelector('.hex');
     const $scaInfo = document.querySelector('.sca-info');
     const $softautumn = document.querySelector('.softautumn');
     const $darkwinter = document.querySelector('.darkwinter');
@@ -264,10 +266,10 @@ function dropper() {
     
     function showResult(hex = '#FFFFFF'){
         $infobox.style.backgroundColor = hex;
-        $table.style.backgroundColor = hex;
-        $hexInfo.innerText = hex;
+        $scaInfo.style.backgroundColor = hex;
+        $hexInfo.innerText = "Color:\n" + hex;
         var hsl = hextohsl(hex);
-        if (parseFloat(hsl.l) > 40){
+        if (parseFloat(hsl.l) > 45){
             $hexInfo.style.color = "black";
             $scaInfo.style.color = "black";
             $info.forEach(element => {
@@ -279,22 +281,33 @@ function dropper() {
             $info.forEach(element => {
                 element.style.color = "white";
             });
-        }
+        };
+        const ranks = {
+            "1": "Bad",
+            "2": "Okay",
+            "3": "Good",
+            "4": "Great",
+            "5": "Perfect"
+        };
+
         var output = scalogic(parseFloat(hsl.s),parseFloat(hsl.l));
         var top_season = getSeasonWithHighestValue(output);
-        $scaInfo.innerText = top_season;
-        $softautumn.innerText = output["Soft Autumn"];
-        $darkwinter.innerText = output["Dark Winter"];
-        $brightspring.innerText = output["Bright Spring"];
-        $lightsummer.innerText = output["Light Summer"];
-        $truautumn.innerText = output["True Autumn"];
-        $truwinter.innerText = output["True Winter"];
-        $truspring.innerText = output["True Spring"];
-        $trusummer.innerText = output["True Summer"];
-        $darkautumn.innerText = output["Dark Autumn"];
-        $brightwinter.innerText = output["Bright Winter"];
-        $lightspring.innerText = output["Light Spring"];
-        $softsummer.innerText = output["Soft Summer"];
+        $scaInfo.innerText = "This is\n"+top_season;
+        const fit = document.getElementById("picker").value
+        var match = ranks[output[fit]] ? ranks[output[fit]]:"Select a season"
+        $season.innerText = "Your match:\n"+match;
+        $softautumn.innerText = ranks[output["Soft Autumn"]];
+        $darkwinter.innerText = ranks[output["Dark Winter"]];
+        $brightspring.innerText = ranks[output["Bright Spring"]];
+        $lightsummer.innerText = ranks[output["Light Summer"]];
+        $truautumn.innerText = ranks[output["True Autumn"]];
+        $truwinter.innerText = ranks[output["True Winter"]];
+        $truspring.innerText = ranks[output["True Spring"]];
+        $trusummer.innerText = ranks[output["True Summer"]];
+        $darkautumn.innerText = ranks[output["Dark Autumn"]];
+        $brightwinter.innerText = ranks[output["Bright Winter"]];
+        $lightspring.innerText = ranks[output["Light Spring"]];
+        $softsummer.innerText = ranks[output["Soft Summer"]];
     };
 
     function openDropper() {
