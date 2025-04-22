@@ -231,13 +231,14 @@ function scalogic(sat, lum) {
             change = 4;
         } else if (([4,5].includes(x)) || ([4,99].includes(y))){
             change = 3;
-        } else if (x <=10 & (y<=10 || y >=96)){
-            change = 3;
         } else if ((x==6) || ([5,98].includes(y))){
             change = 2;
         }
         seasons_dict = pickNeutral(seasons_dict, change)
-    };
+    } else if (x <=10 & (y<=10 || y >=93)){
+        change = 3;
+        seasons_dict = pickNeutral(seasons_dict, change)
+    }
     return seasons_dict;
 };
 
