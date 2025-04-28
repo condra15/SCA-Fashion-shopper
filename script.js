@@ -1,3 +1,5 @@
+const extpay = ExtPay('color-analysis-shopper')
+
 function showNoSupport() {
     const $body = document.querySelector('body');
     const $message = document.createElement('p');
@@ -332,4 +334,26 @@ function init() {
     }
 }
 
-init()
+extpay.getUser().then(user => {
+    if (user.paid || user.subscriptionStatus=="active") {
+        init()
+    } else if (user.trialStartedAt){
+        const now = new Date();
+        const twoweeks = 1000*60*60*24*14 // in milliseconds
+        if (user.trialStartedAt && (now - user.trialStartedAt) < twoweeks) {
+            init()
+        } else {
+            // Have user pay for extension
+            extpay.openPaymentPage('color-analysis-shopper')
+        }
+    } else if (!user.trialStartedAt){
+        // Have user create trial account
+        console.log(user.plan)
+        extpay.openTrialPage('14 day')
+    } else {
+        // Have user pay for extension
+        extpay.openPaymentPage('color-analysis-shopper')
+    }
+}).catch(err => {
+    document.querySelector('p').innerHTML = "Error fetching data :( Check that your user id is correct and you're connected to the internet"
+})
