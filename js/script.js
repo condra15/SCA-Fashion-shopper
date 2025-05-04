@@ -269,7 +269,7 @@ function dropper() {
         $scaInfo.style.backgroundColor = hex;
         $hexInfo.innerText = "Color:\n" + hex;
         var hsl = hextohsl(hex);
-        if (parseFloat(hsl.l) > 45){
+        if (parseFloat(hsl.l) > 50){
             $hexInfo.style.color = "black";
             $scaInfo.style.color = "black";
             $info.forEach(element => {
