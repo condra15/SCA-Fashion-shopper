@@ -1,7 +1,7 @@
 {
-    "name": "SCA Fashion Shopper",
+    "name": "Color Analysis Shopper",
     "version": "1.0.0",
-    "description": "This is an extension to help determine the color season of any clothes you are shopping for or wearing using the seasonal color analysis method.",
+    "description": "This extension utilizes a full screen eyedropper to determine the color season of any clothes you are shopping for or wearing using the seasonal color analysis method.",
     "permissions": ["storage"],
     "background": {
         "service_worker": "background.js"

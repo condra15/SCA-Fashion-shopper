@@ -1,7 +1,8 @@
 - Add ExtensionPay to app
 - Add instructions page for users to find their own color season
 - Allow users to bookmark clothes
-    - Pull name of website and save it to bookmark
+    - Pull name of website and link and save it to bookmark
+    - Allow users to delete bookmark
     - Save season to bookmark
     - Allow users to filter bookmarks by season
     - Allow users to filter bookmarks by store

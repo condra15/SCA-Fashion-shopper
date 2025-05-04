@@ -37,7 +37,6 @@ function hextohsl (hex) {
     l = l*100;
     var lum = Math.round(l);
     var hue = Math.round(360*h);
-
     return {h:hue,s:sat,l:lum};
 }
 
@@ -77,17 +76,17 @@ function getSeasonWithHighestValue(dictionary) {
     return season;
   }
 
-function pickNeutral(seasons_dict,change,neutral_v=6){
+function pickNeutral(seasons_dict,change,neutral_v=7){
     for (var [key, value] of Object.entries(seasons_dict)) {
         if (value<change){
             seasons_dict[key]=change;
         };
     };
     const neutral_type = {
+        "6":"Pure Neutral",
         "5":"Pure Neutral",
-        "4":"Pure Neutral",
-        "3":"Half Neutral",
-        "2":"Near Neutral",
+        "4":"Half Neutral",
+        "3":"Near Neutral",
     }
     seasons_dict[neutral_type[change]] = neutral_v
     return seasons_dict
@@ -204,11 +203,11 @@ function scalogic(sat, lum) {
     };
 
     const season = findSeasonOfSmallestValue(distance_dict);
-    seasons_dict[season]=5;
+    seasons_dict[season]=6;
     const keys = Object.keys(seasons_dict);
     var index = keys.indexOf(season);
-    var score = 4;
-    for (let i=1; i<4; i++){
+    var score = 5;
+    for (let i=1; i<5; i++){
         var keydown = keys.at(index-i);
         var height = index+i>=12 ? 12:0;
         var keyup = keys.at(index-height+i);
@@ -228,17 +227,17 @@ function scalogic(sat, lum) {
     var change = 0;
     if (x<=6 || y<=5 || y>=98){
         if (([0,1].includes(x)) || ([100,0,1,2].includes(y))){
-            change = 5;
+            change = 6;
         } else if (([2,3].includes(x)) || (y==3)){
-            change = 4;
+            change = 5;
         } else if (([4,5].includes(x)) || ([4,99].includes(y))){
-            change = 3;
+            change = 4;
         } else if ((x==6) || ([5,98].includes(y))){
-            change = 2;
+            change = 3;
         }
         seasons_dict = pickNeutral(seasons_dict, change)
     } else if (x <=10 & (y<=10 || y >=93)){
-        change = 3;
+        change = 4;
         seasons_dict = pickNeutral(seasons_dict, change)
     }
     return seasons_dict;
@@ -285,15 +284,16 @@ function dropper() {
         };
         const ranks = {
             "1": "Bad",
-            "2": "Okay",
-            "3": "Good",
-            "4": "Great",
-            "5": "Perfect"
+            "2": "Eh",
+            "3": "Okay",
+            "4": "Good",
+            "5": "Great",
+            "6": "Perfect"
         };
 
         var output = scalogic(parseFloat(hsl.s),parseFloat(hsl.l));
         var top_season = getSeasonWithHighestValue(output);
-        $scaInfo.innerText = "This is\n"+top_season;
+        $scaInfo.innerText = top_season;
         const fit = document.getElementById("picker").value
         var match = ranks[output[fit]] ? ranks[output[fit]]:"Select a season"
         $season.innerText = "Your match:\n"+match;
@@ -337,22 +337,25 @@ function init() {
 extpay.getUser().then(user => {
     if (user.paid || user.subscriptionStatus=="active") {
         init()
-    } else if (user.trialStartedAt){
+    } else if (user.trialStartedAt && !user.paid){
         const now = new Date();
         const twoweeks = 1000*60*60*24*14 // in milliseconds
         if (user.trialStartedAt && (now - user.trialStartedAt) < twoweeks) {
             init()
         } else {
             // Have user pay for extension
-            extpay.openPaymentPage('color-analysis-shopper')
+            document.getElementById("container").hidden = true;
+            document.getElementById("hide").hidden = false;
+            extpay.openPaymentPage()
         }
-    } else if (!user.trialStartedAt){
+    } else if (!user.trialStartedAt && !user.paid){
         // Have user create trial account
-        console.log(user.plan)
         extpay.openTrialPage('14 day')
     } else {
         // Have user pay for extension
-        extpay.openPaymentPage('color-analysis-shopper')
+        document.getElementById("container").hidden = true;
+        document.getElementById("hide").hidden = false;
+        extpay.openPaymentPage()
     }
 }).catch(err => {
     document.querySelector('p').innerHTML = "Error fetching data :( Check that your user id is correct and you're connected to the internet"

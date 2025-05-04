@@ -1,0 +1,1 @@
+const extpay = ExtPay('color-analysis-shopper')

@@ -1,9 +1,20 @@
-<link rel="stylesheet" href="style.css" type="text/css">
+<link rel="stylesheet" href="style/style.css" type="text/css">
 <link href="https://fonts.googleapis.com/css2?family=Fredericka+the+Great&display=swap" rel="stylesheet">
-<script type="module" src="script.js"></script>
+<script type="module" src="js/script.js"></script>
 <script src="ExtPay.js"></script>
 
-<div class="container">
+<header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="routes/favs.html">Favorites</a></li>
+            <li><a href="routes/ranking.html">Tutorial</a></li>
+            <li><a href="routes/login.html">Account</a></li>
+        </ul>
+    </nav>
+</header>
+<p id="hide" hidden> Please create an Account to use features the Account section above</p>
+<div id="container" class="container">
     <h1 class="heading">SCA Fashion Shopper</h1>
     <div class="btn-box">
         <select name="picker" class="btn pick" id="picker">
