@@ -1,7 +1,7 @@
 {
     "name": "Color Analysis Shopper",
     "version": "1.0.0",
-    "description": "This extension utilizes a full screen eyedropper to determine the color season of any clothes you are shopping for or wearing using the seasonal color analysis method.",
+    "description": "This extension uses a full screen eyedropper to find the season of any color using seasonal color analysis for wardrobe shopping.",
     "permissions": ["storage"],
     "icons": {
         "16": "icons/icon16.png",
