@@ -335,27 +335,33 @@ function init() {
 }
 
 extpay.getUser().then(user => {
-    if (user.paid || user.subscriptionStatus=="active") {
+    if (user.paid) {
+        console.log('a')
         init()
-    } else if (user.trialStartedAt && !user.paid){
-        const now = new Date();
-        const twoweeks = 1000*60*60*24*14 // in milliseconds
-        if (user.trialStartedAt && (now - user.trialStartedAt) < twoweeks) {
-            init()
-        } else {
-            // Have user pay for extension
-            document.getElementById("container").hidden = true;
-            document.getElementById("hide").hidden = false;
-            extpay.openPaymentPage()
-        }
     } else if (!user.trialStartedAt && !user.paid){
         // Have user create trial account
+        console.log('f')
         extpay.openTrialPage('14 day')
     } else {
-        // Have user pay for extension
-        document.getElementById("container").hidden = true;
-        document.getElementById("hide").hidden = false;
-        extpay.openPaymentPage()
+        if (user.subscriptionStatus=="past_due" || user.subscriptionStatus=="canceled") {
+            // Have user pay for extension
+            console.log('b')
+            document.getElementById("container").hidden = true;
+            document.getElementById("hide").hidden = false;
+        } else if (user.trialStartedAt){
+            console.log('c')
+            const now = new Date();
+            const twoweeks = 1000*60*60*24*14 // in milliseconds
+            if (user.trialStartedAt && (now - user.trialStartedAt) < twoweeks) {
+                console.log('d')
+                init()
+            } else {
+                // Have user pay for extension
+                console.log('e')
+                document.getElementById("container").hidden = true;
+                document.getElementById("hide").hidden = false;
+            }
+        }
     }
 }).catch(err => {
     document.querySelector('p').innerHTML = "Error fetching data :( Check that your user id is correct and you're connected to the internet"

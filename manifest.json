@@ -1,7 +1,7 @@
 {
-    "name": "Color Analysis: Seasonal Fashion and Color Design Shopper",
+    "name": "Color Season Finder: Style & Shopping Assistant",
     "version": "1.0.0",
-    "description": "This extension uses a full screen eyedropper to find the color season and code of any item on screen using seasonal color analysis",
+    "description": "Eyedrop any color on your screen and get its seasonal color match and hex code — shop smarter, design better, style with confidence.",
     "permissions": ["storage"],
     "icons": {
         "16": "icons/icon16.png",
@@ -23,6 +23,6 @@
     ],
     "action": {
         "default_popup": "index.html",
-        "default_title": "Seasonal Color Shopper"
+        "default_title": "Color Season Finder"
     }
 }
