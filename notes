@@ -1,9 +1,23 @@
-- Add ExtensionPay to app
 - Add instructions page for users to find their own color season
+- Add adsense ads to main page "free version"
+  - free version just tells you color code and season of color
+  - paid version tells the rest of the color seasons and their percentages with toggle for circle or bar
+    - add toggle
+    - add bar chart
+      - figure out distance
+      - reverse y axis so 0 is the highest percent and 70 is the potential lowest. Numbers can go below 70 but may not appear on graph or appear in opposite direction.
+    - test to see if its possible to replace circle with pie chart that would be easier to customize with color and animation effects
 - Allow users to bookmark clothes
-    - Pull name of website and link and save it to bookmark
-    - Allow users to delete bookmark
-    - Save season to bookmark
-    - Allow users to filter bookmarks by season
-    - Allow users to filter bookmarks by store
-    - Find clothes for amazon and stores that allow for affiliate links for customer
+  - Pull name of website and link and save it to bookmark
+  - Allow users to delete bookmark
+  - Save season to bookmark
+  - Allow users to filter bookmarks by season
+  - Allow users to filter bookmarks by store
+  - Find clothes for amazon and stores that allow for affiliate links for customer
+- Create beta version to allow for reddit users to test
+
+  - find beta type that works for this and then create beta version to
+  - make reddit post talking about where it is and requesting beta users
+
+- manifest json description
+  - Eyedrop any color on your screen and get its seasonal color match and hex code — shop smarter, design better, style with confidence

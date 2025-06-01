@@ -1,7 +1,7 @@
 {
-    "name": "Color Season Finder: Style & Shopping Assistant",
-    "version": "1.0.0",
-    "description": "Eyedrop any color on your screen and get its seasonal color match and hex code — shop smarter, design better, style with confidence.",
+    "name": "Color Season Finder: Style & Shopping Assistant -- BETA",
+    "version": "0.2.0",
+    "description": "Eyedrop any color on your screen and get its seasonal color match and hex code -- THIS EXTENSION IS FOR BETA TESTING",
     "permissions": ["storage"],
     "icons": {
         "16": "icons/icon16.png",

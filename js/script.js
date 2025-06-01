@@ -1,10 +1,10 @@
 const extpay = ExtPay("color-analysis-shopper");
 
 function showNoSupport() {
-  const $body = document.querySelector("body");
+  const $body = document.querySelector("container");
   const $message = document.createElement("p");
   $message.classList.add("error");
-  $message.innerHTML = "Your browser does not support this";
+  $message.innerHTML = "Your browser does not support this extension";
   $body.appendChild($message);
 }
 
@@ -49,11 +49,11 @@ function hextohsl(hex) {
   return { h: hue, s: sat, l: lum };
 }
 
-// function calculateDistance(x1, y1, x2, y2) {
-//   const xDiff = x2 - x1;
-//   const yDiff = y2 - y1;
-//   return Math.sqrt(xDiff * xDiff + yDiff * yDiff);
-// }
+function calculateDistance(x1, y1, x2, y2) {
+  const xDiff = x2 - x1;
+  const yDiff = y2 - y1;
+  return Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+}
 
 function calculatelength(x, y, a, b, c) {
   const num = Math.abs(x * a + b * y + c);
@@ -62,8 +62,7 @@ function calculatelength(x, y, a, b, c) {
 }
 
 function standardDeviation(arr) {
-  const filteredArr = arr.filter((value) => value != null); // Filters out null and undefined
-
+  const filteredArr = arr.filter((value) => value); // Filters out null and undefined
   if (filteredArr.length === 0) {
     return NaN; // Return NaN if the array is empty after filtering
   }
@@ -141,88 +140,89 @@ function scalogic(sat, lum) {
 
   // find distance of both x or y equations and pick the smallest distance
   // then use a condition that if it is directly across, we add the distance to the center so we have distance for everything
+  const center_dist = calculateDistance(50, 50, x, y);
 
   const lum_dict = {
     "Light Summer": function (x, y) {
       if ((y <= 0.2679 * x + 36.605) & (x >= (y - 36.605) / 0.2679)) {
-        return undefined;
+        return center_dist;
       } else {
         return calculatelength(x, y, 3.732, 1, -236.607);
       }
     },
     "True Summer": function (x, y) {
       if ((y <= x) & (x >= y)) {
-        return undefined;
+        return center_dist;
       } else {
         return calculatelength(x, y, 1, 1, -100);
       }
     },
     "Soft Summer": function (x, y) {
       if ((y <= 3.732 * x - 136.607) & (x >= (y + 136.607) / 3.732)) {
-        return undefined;
+        return center_dist;
       } else {
         return calculatelength(x, y, 0.2679, 1, -63.395);
       }
     },
     "Bright Spring": function (x, y) {
       if ((y <= -3.732 * x + 236.607) & (x <= (y - 236.607) / -3.732)) {
-        return undefined;
+        return center_dist;
       } else {
         return calculatelength(x, y, -0.2679, 1, -36.605);
       }
     },
     "True Spring": function (x, y) {
       if ((y <= -x + 100) & (x <= -y + 100)) {
-        return undefined;
+        return center_dist;
       } else {
         return calculatelength(x, y, -1, 1, 0);
       }
     },
     "Light Spring": function (x, y) {
       if ((y <= -0.2679 * x + 63.395) & (x <= (y - 63.395) / -0.2679)) {
-        return undefined;
+        return center_dist;
       } else {
         return calculatelength(x, y, -3.732, 1, 136.607);
       }
     },
     "Dark Winter": function (x, y) {
       if ((y > 0.2679 * x + 36.605) & (x < (y - 36.605) / 0.2679)) {
-        return undefined;
+        return center_dist;
       } else {
         return calculatelength(x, y, 3.732, 1, -236.607);
       }
     },
     "True Winter": function (x, y) {
       if ((y > x) & (x < y)) {
-        return undefined;
+        return center_dist;
       } else {
         return calculatelength(x, y, 1, 1, -100);
       }
     },
     "Bright Winter": function (x, y) {
       if ((y > 3.732 * x - 136.607) & (x < (y + 136.607) / 3.732)) {
-        return undefined;
+        return center_dist;
       } else {
         return calculatelength(x, y, 0.2679, 1, -63.395);
       }
     },
     "Soft Autumn": function (x, y) {
       if ((y > -3.732 * x + 236.607) & (x > (y - 236.607) / -3.732)) {
-        return undefined;
+        return center_dist;
       } else {
         return calculatelength(x, y, -0.2679, 1, -36.605);
       }
     },
     "True Autumn": function (x, y) {
       if ((y > -x + 100) & (x > -y + 100)) {
-        return undefined;
+        return center_dist;
       } else {
         return calculatelength(x, y, -1, 1, 0);
       }
     },
     "Dark Autumn": function (x, y) {
       if ((y > -0.2679 * x + 63.395) & (x > (y - 63.395) / -0.2679)) {
-        return undefined;
+        return center_dist;
       } else {
         return calculatelength(x, y, -3.732, 1, 136.607);
       }
@@ -243,12 +243,15 @@ function scalogic(sat, lum) {
     "True Winter": Math.min(lum_dict["True Winter"](x, y)),
     "Bright Winter": Math.min(lum_dict["Bright Winter"](x, y)),
   };
+
+  const stddev = standardDeviation(Object.values(distance_dict));
+
   console.log("sat: " + x, "lum: " + y);
-  console.log(
-    Object.fromEntries(
-      Object.entries(distance_dict).sort((a, b) => a[1] - b[1])
-    )
-  );
+  console.log(distance_dict);
+  console.log(stddev);
+
+  // lowest+stddev/2 is perfect, lowest+stddev(1.5) is great, lowest+stddev(2.5) is good
+
   var seasons_dict = {
     "Bright Spring": 1,
     "True Spring": 1,
