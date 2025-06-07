@@ -16,8 +16,8 @@ function hextohsl(hex) {
   var b = parseInt(result[3], 16);
 
   (r /= 255), (g /= 255), (b /= 255);
-  var max = Math.max(r, g, b),
-    min = Math.min(r, g, b);
+  var max = Math.max(r, g, b);
+  var min = Math.min(r, g, b);
   var h,
     s,
     l = (max + min) / 2;
@@ -313,6 +313,7 @@ function dropper() {
   const $infobox = document.querySelector(".infobox");
   const $info = document.querySelectorAll(".info");
   const $season = document.querySelector(".season");
+  const $result = document.querySelector(".result");
   const $hexInfo = document.querySelector(".hex");
   const $scaInfo = document.querySelector(".sca-info");
   const $softautumn = document.querySelector(".softautumn");
@@ -361,6 +362,7 @@ function dropper() {
     const fit = document.getElementById("picker").value;
     var match = ranks[output[fit]] ? ranks[output[fit]] : "Select a season";
     $season.innerText = "Your match:\n" + match;
+    $result.innerText = top_season;
     $softautumn.innerText = ranks[output["Soft Autumn"]];
     $darkwinter.innerText = ranks[output["Dark Winter"]];
     $brightspring.innerText = ranks[output["Bright Spring"]];
@@ -398,32 +400,46 @@ function init() {
     showNoSupport();
   }
 }
-
 extpay
   .getUser()
   .then((user) => {
     if (user.paid) {
+      console.log("a");
+      document.getElementById("bottom").style.display = "flex";
+      document.getElementById("bottom").style.height = "280px";
       init();
-    } else if (!user.trialStartedAt && !user.paid) {
+    } else if (!user.trialStartedAt && !user.subscriptionStatus) {
       // Have user create trial account
       extpay.openTrialPage("14 day");
+      console.log("a");
+      document.getElementById("bottom").style.display = "none";
+      document.querySelector(".season").style.display = "none";
+      document.getElementById("picker").style.display = "none";
+      init();
     } else {
       if (
         user.subscriptionStatus == "past_due" ||
         user.subscriptionStatus == "canceled"
       ) {
+        console.log("b");
         // Have user pay for extension
-        document.getElementById("container").hidden = true;
-        document.getElementById("hide").hidden = false;
+        document.getElementById("bottom").style.display = "none";
+        document.querySelector(".season").style.display = "none";
+        document.getElementById("picker").style.display = "none";
+        init();
       } else if (user.trialStartedAt) {
         const now = new Date();
         const twoweeks = 1000 * 60 * 60 * 24 * 14; // in milliseconds
         if (user.trialStartedAt && now - user.trialStartedAt < twoweeks) {
+          console.log("c");
           init();
         } else {
           // Have user pay for extension
-          document.getElementById("container").hidden = true;
-          document.getElementById("hide").hidden = false;
+          console.log("d");
+          document.getElementById("bottom").style.display = "none";
+          document.querySelector(".season").style.display = "none";
+          document.getElementById("picker").style.display = "none";
+          init();
         }
       }
     }

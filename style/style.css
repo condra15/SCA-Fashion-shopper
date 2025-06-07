@@ -98,8 +98,8 @@ li {
 .bottom{
     position: relative;
     width: 100%;
-    height: 280px;
-    display: flex;
+    /* height: 280px; */
+    /* display: flex; */
     justify-content: center;
     align-items: center;
     background: whitesmoke;

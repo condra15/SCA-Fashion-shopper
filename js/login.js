@@ -13,6 +13,7 @@ $manage.addEventListener("click", function (evt) {
   extpay.getUser().then((user) => {
     if (!user.trialStartedAt && !user.paid) {
       // Have user create trial account
+      extpay.openPaymentPage();
       extpay.openTrialPage("14 day");
     } else {
       // Have user pay for extension
