@@ -404,18 +404,14 @@ extpay
   .getUser()
   .then((user) => {
     if (user.paid) {
+      console.log("1");
       console.log("a");
-      document.getElementById("bottom").style.display = "flex";
-      document.getElementById("bottom").style.height = "280px";
       init();
     } else if (!user.trialStartedAt && !user.subscriptionStatus) {
       // Have user create trial account
       extpay.openTrialPage("14 day");
       console.log("a");
       document.getElementById("bottom").style.display = "none";
-      document.querySelector(".season").style.display = "none";
-      document.getElementById("picker").style.display = "none";
-      init();
     } else {
       if (
         user.subscriptionStatus == "past_due" ||
@@ -424,9 +420,6 @@ extpay
         console.log("b");
         // Have user pay for extension
         document.getElementById("bottom").style.display = "none";
-        document.querySelector(".season").style.display = "none";
-        document.getElementById("picker").style.display = "none";
-        init();
       } else if (user.trialStartedAt) {
         const now = new Date();
         const twoweeks = 1000 * 60 * 60 * 24 * 14; // in milliseconds
@@ -437,9 +430,6 @@ extpay
           // Have user pay for extension
           console.log("d");
           document.getElementById("bottom").style.display = "none";
-          document.querySelector(".season").style.display = "none";
-          document.getElementById("picker").style.display = "none";
-          init();
         }
       }
     }
