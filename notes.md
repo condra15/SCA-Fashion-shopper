@@ -1,0 +1,11 @@
+- change to pie chart or add pointer to perfect season
+  - test to see if its possible to replace circle with pie chart that would be easier to customize with color and animation effects
+- Allow users to bookmark clothes
+  - Pull name of website and link and save it to bookmark
+  - Allow users to delete bookmark
+  - Save season to bookmark
+  - Allow users to filter bookmarks by season
+  - Allow users to filter bookmarks by store
+  - Send users to stores that have affiliate links potentially using the season as a lead
+- Add sign up note
+- Add method to analyze colors of pixels in a picture by right clicking the picture and giving the color season and match of the colors in order most occuring colors

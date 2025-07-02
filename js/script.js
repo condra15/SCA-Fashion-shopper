@@ -490,7 +490,8 @@ extpay
     } else if (!user.trialStartedAt && !user.subscriptionStatus) {
       // Have user create trial account
       extpay.openTrialPage("14 day");
-      document.getElementById("bottom").style.display = "none";
+      document.getElementById("bottom").textContent =
+        "A 2 week free trial page pop-up has automatically opened up. Simply sign up with your email there to unlock access or click Account above to create a permanent account with us";
     } else {
       if (
         user.subscriptionStatus == "past_due" ||
@@ -531,6 +532,9 @@ extpay
             init();
           }
         }
+      } else {
+        document.getElementById("bottom").textContent =
+          "Please register for the extension in the Account section above to unlock infinite uses";
       }
     }
   })
