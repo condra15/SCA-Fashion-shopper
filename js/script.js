@@ -1,5 +1,13 @@
 const extpay = ExtPay("color-analysis-shopper");
 
+// Constants for weekly counter
+const MAX_CLICKS = 10;
+const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const MAX_DAYS = 7;
+
+let isPaidUser = false;
+chrome.storage.local.set({ counter: 10 });
+
 function showNoSupport() {
   const $body = document.querySelector("container");
   const $message = document.createElement("p");
@@ -112,7 +120,7 @@ function pickNeutral(seasons_dict, change, neutral_v = 7) {
   }
   const neutral_type = {
     6: "Pure Neutral",
-    5: "Pure Neutral",
+    5: "Neutral",
     4: "Half Neutral",
     3: "Near Neutral",
   };
@@ -244,12 +252,7 @@ function scalogic(sat, lum) {
     "Bright Winter": Math.min(lum_dict["Bright Winter"](x, y)),
   };
 
-  const stddev = standardDeviation(Object.values(distance_dict));
-
-  console.log("sat: " + x, "lum: " + y);
-  console.log(distance_dict);
-  console.log(stddev);
-
+  //   const stddev = standardDeviation(Object.values(distance_dict));
   // lowest+stddev/2 is perfect, lowest+stddev(1.5) is great, lowest+stddev(2.5) is good
 
   var seasons_dict = {
@@ -308,12 +311,12 @@ function scalogic(sat, lum) {
 }
 
 function dropper() {
-  const eyeDropper = new EyeDropper();
   const $find = document.querySelector(".find");
   const $infobox = document.querySelector(".infobox");
   const $info = document.querySelectorAll(".info");
   const $season = document.querySelector(".season");
   const $result = document.querySelector(".result");
+  const $dropdown = document.getElementById("picker");
   const $hexInfo = document.querySelector(".hex");
   const $scaInfo = document.querySelector(".sca-info");
   const $softautumn = document.querySelector(".softautumn");
@@ -328,6 +331,76 @@ function dropper() {
   const $brightwinter = document.querySelector(".brightwinter");
   const $lightspring = document.querySelector(".lightspring");
   const $softsummer = document.querySelector(".softsummer");
+
+  async function loadState() {
+    const { counter = MAX_CLICKS, lastReset = 0 } =
+      await chrome.storage.local.get(["counter", "lastReset"]);
+    const now = Date.now();
+
+    if (now - lastReset >= ONE_WEEK_MS) {
+      await chrome.storage.local.set({ counter: MAX_CLICKS, lastReset: now });
+      return { counter: MAX_CLICKS };
+    }
+
+    const nextReset = lastReset + ONE_WEEK_MS;
+    const timeLeftMs = nextReset - now;
+    const daysLeft = Math.ceil(timeLeftMs / (1000 * 60 * 60 * 24));
+    const $resetTimer = document.getElementById("reset-timer");
+    if ($resetTimer) {
+      $resetTimer.textContent = `Resets in: ${daysLeft} day${
+        daysLeft !== 1 ? "s" : ""
+      }`;
+      await chrome.storage.local.set({ daysLeft: daysLeft });
+    }
+    return { counter };
+  }
+
+  async function updateCounter(newCount) {
+    $find.disabled = newCount === 0;
+    await chrome.storage.local.set({ counter: newCount });
+  }
+
+  async function openDropper() {
+    if (!isPaidUser) {
+      const { counter } = await chrome.storage.local.get("counter");
+      if (counter <= 0) {
+        console.log("Weekly use limit reached.");
+        return;
+      }
+    }
+
+    const eyeDropper = new EyeDropper();
+    try {
+      const res = await eyeDropper.open();
+      if (res && res.sRGBHex) {
+        showResult(res.sRGBHex);
+        if (!isPaidUser) {
+          const { counter } = await chrome.storage.local.get("counter");
+          const newCount = counter - 1;
+          document.getElementById("count").innerHTML =
+            "Usage count left this week: " + newCount;
+          await updateCounter(newCount);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    if (!isPaidUser) {
+      const { counter } = await loadState();
+      $find.disabled = counter <= 0;
+    }
+  });
+
+  chrome.storage.local.get(["dropdownValue"], function (result) {
+    if (result.dropdownValue) {
+      const $dropdown = document.getElementById("picker");
+      $dropdown.value = result.dropdownValue;
+      console.log("Dropdown value retrieved: " + result.dropdownValue);
+    }
+  });
 
   function showResult(hex = "#FFFFFF") {
     $infobox.style.backgroundColor = hex;
@@ -359,7 +432,7 @@ function dropper() {
     var output = scalogic(parseFloat(hsl.s), parseFloat(hsl.l));
     var top_season = getSeasonWithHighestValue(output);
     $scaInfo.innerText = top_season;
-    const fit = document.getElementById("picker").value;
+    var fit = $dropdown.value;
     var match = ranks[output[fit]] ? ranks[output[fit]] : "Select a season";
     $season.innerText = "Your match:\n" + match;
     $result.innerText = top_season;
@@ -377,20 +450,26 @@ function dropper() {
     $softsummer.innerText = ranks[output["Soft Summer"]];
   }
 
-  function openDropper() {
-    eyeDropper
-      .open()
-      .then((res) => {
-        if (res && res.sRGBHex) {
-          showResult(res.sRGBHex);
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }
+  // function openDropper() {
+  //   eyeDropper
+  //     .open()
+  //     .then((res) => {
+  //       if (res && res.sRGBHex) {
+  //         showResult(res.sRGBHex);
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       console.error(err);
+  //     });
+  // }
 
   $find.addEventListener("click", openDropper);
+  $dropdown.addEventListener("change", function () {
+    const selectedValue = $dropdown.value;
+    chrome.storage.local.set({ dropdownValue: selectedValue }, function () {
+      console.log("Dropdown value saved: " + selectedValue);
+    });
+  });
 }
 
 function init() {
@@ -402,34 +481,55 @@ function init() {
 }
 extpay
   .getUser()
-  .then((user) => {
+  .then(async (user) => {
+    isPaidUser = user.paid;
+    let { counter = MAX_CLICKS } = await chrome.storage.local.get("counter");
+    let { daysLeft = MAX_DAYS } = await chrome.storage.local.get("daysLeft");
     if (user.paid) {
-      console.log("1");
-      console.log("a");
       init();
     } else if (!user.trialStartedAt && !user.subscriptionStatus) {
       // Have user create trial account
       extpay.openTrialPage("14 day");
-      console.log("a");
       document.getElementById("bottom").style.display = "none";
     } else {
       if (
         user.subscriptionStatus == "past_due" ||
         user.subscriptionStatus == "canceled"
       ) {
-        console.log("b");
         // Have user pay for extension
-        document.getElementById("bottom").style.display = "none";
+        document.getElementById("count").hidden = false;
+        document.getElementById("reset-timer").hidden = false;
+        if (counter <= 0) {
+          document.getElementById("bottom").textContent =
+            "Please register for the extension in the Account section above to unlock infinite uses";
+          document.getElementById(
+            "reset-timer"
+          ).textContent = `Resets in: ${daysLeft} day${
+            daysLeft !== 1 ? "s" : ""
+          }`;
+        } else {
+          init();
+        }
       } else if (user.trialStartedAt) {
         const now = new Date();
         const twoweeks = 1000 * 60 * 60 * 24 * 14; // in milliseconds
         if (user.trialStartedAt && now - user.trialStartedAt < twoweeks) {
-          console.log("c");
           init();
         } else {
           // Have user pay for extension
-          console.log("d");
-          document.getElementById("bottom").style.display = "none";
+          document.getElementById("count").hidden = false;
+          document.getElementById("reset-timer").hidden = false;
+          if (counter <= 0) {
+            document.getElementById("bottom").textContent =
+              "Weekly click limit reached. Please register for the extension in the Account section above to unlock infinite uses";
+            document.getElementById(
+              "reset-timer"
+            ).textContent = `Resets in: ${daysLeft} day${
+              daysLeft !== 1 ? "s" : ""
+            }`;
+          } else {
+            init();
+          }
         }
       }
     }
