@@ -6,7 +6,6 @@ const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_DAYS = 7;
 
 let isPaidUser = false;
-chrome.storage.local.set({ counter: 10 });
 
 function showNoSupport() {
   const $body = document.querySelector("container");
