@@ -7,6 +7,34 @@ const MAX_DAYS = 7;
 
 let isPaidUser = false;
 
+async function getSeasonFromHex(hexColor, userS) {
+  const url =
+    "https://color-season-finder.p.rapidapi.com/api/seasonal-color-hex";
+
+  const options = {
+    method: "POST",
+    headers: {
+      "x-rapidapi-key": "2595057010msh091d73199dab015p10bae0jsnf321d42d6941",
+      "x-rapidapi-host": "color-season-finder.p.rapidapi.com",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      hex: hexColor,
+      userSeason: userS,
+    }),
+  };
+
+  try {
+    const response = await fetch(url, options);
+    const data = await response.json();
+    console.log("Season result:", data);
+    return data.result;
+  } catch (error) {
+    console.error("Error fetching season:", error);
+    return null;
+  }
+}
+
 function showNoSupport() {
   const $body = document.querySelector("container");
   const $message = document.createElement("p");
@@ -96,21 +124,6 @@ function findSeasonOfSmallestValue(dictionary) {
   return season;
 }
 
-function getSeasonWithHighestValue(dictionary) {
-  let highestValue = -Infinity;
-  let season = null;
-
-  for (const index in dictionary) {
-    if (dictionary.hasOwnProperty(index)) {
-      if (dictionary[index] > highestValue) {
-        highestValue = dictionary[index];
-        season = index;
-      }
-    }
-  }
-  return season;
-}
-
 function pickNeutral(seasons_dict, change, neutral_v = 7) {
   for (var [key, value] of Object.entries(seasons_dict)) {
     if (value < change) {
@@ -124,188 +137,6 @@ function pickNeutral(seasons_dict, change, neutral_v = 7) {
     3: "Near Neutral",
   };
   seasons_dict[neutral_type[change]] = neutral_v;
-  return seasons_dict;
-}
-
-function scalogic(sat, lum) {
-  const x = sat;
-  const y = lum;
-
-  // summer = high lum, low sat
-  // winter = low lum, high sat
-  // spring = high lum, high sat
-  // autumn = low lum, low sat
-
-  // low s -> soft
-  // high s -> bright
-  // low l -> dark
-  // high l -> light
-
-  // Should make the rating like a circle
-
-  // Saturation is x, lum is y
-
-  // find distance of both x or y equations and pick the smallest distance
-  // then use a condition that if it is directly across, we add the distance to the center so we have distance for everything
-  const center_dist = calculateDistance(50, 50, x, y);
-
-  const lum_dict = {
-    "Light Summer": function (x, y) {
-      if ((y <= 0.2679 * x + 36.605) & (x >= (y - 36.605) / 0.2679)) {
-        return center_dist;
-      } else {
-        return calculatelength(x, y, 3.732, 1, -236.607);
-      }
-    },
-    "True Summer": function (x, y) {
-      if ((y <= x) & (x >= y)) {
-        return center_dist;
-      } else {
-        return calculatelength(x, y, 1, 1, -100);
-      }
-    },
-    "Soft Summer": function (x, y) {
-      if ((y <= 3.732 * x - 136.607) & (x >= (y + 136.607) / 3.732)) {
-        return center_dist;
-      } else {
-        return calculatelength(x, y, 0.2679, 1, -63.395);
-      }
-    },
-    "Bright Spring": function (x, y) {
-      if ((y <= -3.732 * x + 236.607) & (x <= (y - 236.607) / -3.732)) {
-        return center_dist;
-      } else {
-        return calculatelength(x, y, -0.2679, 1, -36.605);
-      }
-    },
-    "True Spring": function (x, y) {
-      if ((y <= -x + 100) & (x <= -y + 100)) {
-        return center_dist;
-      } else {
-        return calculatelength(x, y, -1, 1, 0);
-      }
-    },
-    "Light Spring": function (x, y) {
-      if ((y <= -0.2679 * x + 63.395) & (x <= (y - 63.395) / -0.2679)) {
-        return center_dist;
-      } else {
-        return calculatelength(x, y, -3.732, 1, 136.607);
-      }
-    },
-    "Dark Winter": function (x, y) {
-      if ((y > 0.2679 * x + 36.605) & (x < (y - 36.605) / 0.2679)) {
-        return center_dist;
-      } else {
-        return calculatelength(x, y, 3.732, 1, -236.607);
-      }
-    },
-    "True Winter": function (x, y) {
-      if ((y > x) & (x < y)) {
-        return center_dist;
-      } else {
-        return calculatelength(x, y, 1, 1, -100);
-      }
-    },
-    "Bright Winter": function (x, y) {
-      if ((y > 3.732 * x - 136.607) & (x < (y + 136.607) / 3.732)) {
-        return center_dist;
-      } else {
-        return calculatelength(x, y, 0.2679, 1, -63.395);
-      }
-    },
-    "Soft Autumn": function (x, y) {
-      if ((y > -3.732 * x + 236.607) & (x > (y - 236.607) / -3.732)) {
-        return center_dist;
-      } else {
-        return calculatelength(x, y, -0.2679, 1, -36.605);
-      }
-    },
-    "True Autumn": function (x, y) {
-      if ((y > -x + 100) & (x > -y + 100)) {
-        return center_dist;
-      } else {
-        return calculatelength(x, y, -1, 1, 0);
-      }
-    },
-    "Dark Autumn": function (x, y) {
-      if ((y > -0.2679 * x + 63.395) & (x > (y - 63.395) / -0.2679)) {
-        return center_dist;
-      } else {
-        return calculatelength(x, y, -3.732, 1, 136.607);
-      }
-    },
-  };
-
-  const distance_dict = {
-    "Bright Spring": Math.min(lum_dict["Bright Spring"](x, y)),
-    "True Spring": Math.min(lum_dict["True Spring"](x, y)),
-    "Light Spring": Math.min(lum_dict["Light Spring"](x, y)),
-    "Light Summer": Math.min(lum_dict["Light Summer"](x, y)),
-    "True Summer": Math.min(lum_dict["True Summer"](x, y)),
-    "Soft Summer": Math.min(lum_dict["Soft Summer"](x, y)),
-    "Soft Autumn": Math.min(lum_dict["Soft Autumn"](x, y)),
-    "True Autumn": Math.min(lum_dict["True Autumn"](x, y)),
-    "Dark Autumn": Math.min(lum_dict["Dark Autumn"](x, y)),
-    "Dark Winter": Math.min(lum_dict["Dark Winter"](x, y)),
-    "True Winter": Math.min(lum_dict["True Winter"](x, y)),
-    "Bright Winter": Math.min(lum_dict["Bright Winter"](x, y)),
-  };
-
-  //   const stddev = standardDeviation(Object.values(distance_dict));
-  // lowest+stddev/2 is perfect, lowest+stddev(1.5) is great, lowest+stddev(2.5) is good
-
-  var seasons_dict = {
-    "Bright Spring": 1,
-    "True Spring": 1,
-    "Light Spring": 1,
-    "Light Summer": 1,
-    "True Summer": 1,
-    "Soft Summer": 1,
-    "Soft Autumn": 1,
-    "True Autumn": 1,
-    "Dark Autumn": 1,
-    "Dark Winter": 1,
-    "True Winter": 1,
-    "Bright Winter": 1,
-  };
-
-  const season = findSeasonOfSmallestValue(distance_dict);
-  seasons_dict[season] = 6;
-  const keys = Object.keys(seasons_dict);
-  var index = keys.indexOf(season);
-  var score = 5;
-  for (let i = 1; i < 5; i++) {
-    var keydown = keys.at(index - i);
-    var height = index + i >= 12 ? 12 : 0;
-    var keyup = keys.at(index - height + i);
-
-    seasons_dict[keydown] = score;
-    seasons_dict[keyup] = score;
-    score -= 1;
-  }
-
-  // Neutrals:
-  // Near Neutral, Half Nautral, Pure Neutral
-  // stage 1 y=5,98  x=4: adds +1 to any 0
-  // stage 2 y=4,99  x=3: adds additional +1 to any below 2
-  // stage 3 y=3  x=2: adds additional +1 to any below 3
-  // stage 4 y=2,1,0,100 and x=0,1: adds additional +1 to any below 4
-  var change = 0;
-  if (x <= 6 || y <= 5 || y >= 98) {
-    if ([0, 1].includes(x) || [100, 0, 1, 2].includes(y)) {
-      change = 6;
-    } else if ([2, 3].includes(x) || y == 3) {
-      change = 5;
-    } else if ([4, 5].includes(x) || [4, 99].includes(y)) {
-      change = 4;
-    } else if (x == 6 || [5, 98].includes(y)) {
-      change = 3;
-    }
-    seasons_dict = pickNeutral(seasons_dict, change);
-  } else if ((x <= 10) & (y <= 10 || y >= 93)) {
-    change = 4;
-    seasons_dict = pickNeutral(seasons_dict, change);
-  }
   return seasons_dict;
 }
 
@@ -402,10 +233,13 @@ function dropper() {
   });
 
   function showResult(hex = "#FFFFFF") {
+    var hsl = hextohsl(hex);
+    var fit = $dropdown.value ? $dropdown.value : undefined;
+    var output = getSeasonFromHex(hex, fit);
     $infobox.style.backgroundColor = hex;
     $scaInfo.style.backgroundColor = hex;
     $hexInfo.innerText = "Color:\n" + hex;
-    var hsl = hextohsl(hex);
+
     if (parseFloat(hsl.l) > 50) {
       $hexInfo.style.color = "black";
       $scaInfo.style.color = "black";
@@ -419,48 +253,27 @@ function dropper() {
         element.style.color = "white";
       });
     }
-    const ranks = {
-      1: "Bad",
-      2: "Eh",
-      3: "Okay",
-      4: "Good",
-      5: "Great",
-      6: "Perfect",
-    };
 
-    var output = scalogic(parseFloat(hsl.s), parseFloat(hsl.l));
-    var top_season = getSeasonWithHighestValue(output);
+    var top_season = output["colorSeason"];
     $scaInfo.innerText = top_season;
-    var fit = $dropdown.value;
-    var match = ranks[output[fit]] ? ranks[output[fit]] : "Select a season";
+    var match = output["compatibility"]
+      ? output["compatibility"]
+      : "Select a season";
     $season.innerText = "Your match:\n" + match;
     $result.innerText = top_season;
-    $softautumn.innerText = ranks[output["Soft Autumn"]];
-    $darkwinter.innerText = ranks[output["Dark Winter"]];
-    $brightspring.innerText = ranks[output["Bright Spring"]];
-    $lightsummer.innerText = ranks[output["Light Summer"]];
-    $truautumn.innerText = ranks[output["True Autumn"]];
-    $truwinter.innerText = ranks[output["True Winter"]];
-    $truspring.innerText = ranks[output["True Spring"]];
-    $trusummer.innerText = ranks[output["True Summer"]];
-    $darkautumn.innerText = ranks[output["Dark Autumn"]];
-    $brightwinter.innerText = ranks[output["Bright Winter"]];
-    $lightspring.innerText = ranks[output["Light Spring"]];
-    $softsummer.innerText = ranks[output["Soft Summer"]];
+    $softautumn.innerText = output["seasons_dict"]["Soft Autumn"];
+    $darkwinter.innerText = output["seasons_dict"]["Dark Winter"];
+    $brightspring.innerText = output["seasons_dict"]["Bright Spring"];
+    $lightsummer.innerText = output["seasons_dict"]["Light Summer"];
+    $truautumn.innerText = output["seasons_dict"]["True Autumn"];
+    $truwinter.innerText = output["seasons_dict"]["True Winter"];
+    $truspring.innerText = output["seasons_dict"]["True Spring"];
+    $trusummer.innerText = output["seasons_dict"]["True Summer"];
+    $darkautumn.innerText = output["seasons_dict"]["Dark Autumn"];
+    $brightwinter.innerText = output["seasons_dict"]["Bright Winter"];
+    $lightspring.innerText = output["seasons_dict"]["Light Spring"];
+    $softsummer.innerText = output["seasons_dict"]["Soft Summer"];
   }
-
-  // function openDropper() {
-  //   eyeDropper
-  //     .open()
-  //     .then((res) => {
-  //       if (res && res.sRGBHex) {
-  //         showResult(res.sRGBHex);
-  //       }
-  //     })
-  //     .catch((err) => {
-  //       console.error(err);
-  //     });
-  // }
 
   $find.addEventListener("click", openDropper);
   $dropdown.addEventListener("change", function () {
