@@ -84,62 +84,6 @@ function hextohsl(hex) {
   return { h: hue, s: sat, l: lum };
 }
 
-function calculateDistance(x1, y1, x2, y2) {
-  const xDiff = x2 - x1;
-  const yDiff = y2 - y1;
-  return Math.sqrt(xDiff * xDiff + yDiff * yDiff);
-}
-
-function calculatelength(x, y, a, b, c) {
-  const num = Math.abs(x * a + b * y + c);
-  const den = Math.sqrt(a ** 2 + b ** 2);
-  return num / den;
-}
-
-function standardDeviation(arr) {
-  const filteredArr = arr.filter((value) => value); // Filters out null and undefined
-  if (filteredArr.length === 0) {
-    return NaN; // Return NaN if the array is empty after filtering
-  }
-
-  const n = filteredArr.length;
-  const mean = filteredArr.reduce((a, b) => a + b, 0) / n;
-  const variance =
-    filteredArr.reduce((a, b) => a + (b - mean) ** 2, 0) / (n - 1);
-  return Math.sqrt(variance);
-}
-
-function findSeasonOfSmallestValue(dictionary) {
-  let smallestValue = Infinity;
-  let season = null;
-
-  for (const index in dictionary) {
-    if (dictionary.hasOwnProperty(index)) {
-      if (dictionary[index] < smallestValue) {
-        smallestValue = dictionary[index];
-        season = index;
-      }
-    }
-  }
-  return season;
-}
-
-function pickNeutral(seasons_dict, change, neutral_v = 7) {
-  for (var [key, value] of Object.entries(seasons_dict)) {
-    if (value < change) {
-      seasons_dict[key] = change;
-    }
-  }
-  const neutral_type = {
-    6: "Pure Neutral",
-    5: "Neutral",
-    4: "Half Neutral",
-    3: "Near Neutral",
-  };
-  seasons_dict[neutral_type[change]] = neutral_v;
-  return seasons_dict;
-}
-
 function dropper() {
   const $find = document.querySelector(".find");
   const $infobox = document.querySelector(".infobox");
