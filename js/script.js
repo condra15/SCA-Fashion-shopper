@@ -1,7 +1,8 @@
 const extpay = ExtPay("color-analysis-shopper");
 
-// Constants for weekly counter
+// Constants for daily counter
 const MAX_CLICKS = 5;
+const MAX_HOURS = 24;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 let isPaidUser = false;
@@ -30,7 +31,6 @@ async function getSeasonFromHex(hexColor, userS) {
   try {
     const response = await fetch(url, options);
     const data = await response.json();
-    console.log("Season result:", data);
     return data.result;
   } catch (error) {
     console.error("Error fetching season:", error);
@@ -141,7 +141,7 @@ function dropper() {
     if (!isPaidUser) {
       const { counter } = await chrome.storage.local.get("counter");
       if (counter <= 0) {
-        console.log("Weekly use limit reached.");
+        console.log("Daily use limit reached.");
         return;
       }
     }
@@ -155,7 +155,7 @@ function dropper() {
           const { counter } = await chrome.storage.local.get("counter");
           const newCount = counter - 1;
           document.getElementById("count").innerHTML =
-            "Usage count left this week: " + newCount;
+            "Usage count left today: " + newCount;
           await updateCounter(newCount);
         }
       }
@@ -231,8 +231,20 @@ function dropper() {
   });
 }
 
-function init() {
+async function init() {
   if ("EyeDropper" in window) {
+    const now = Date.now();
+    const { counter, lastReset } = await chrome.storage.local.get([
+      "counter",
+      "lastReset",
+    ]);
+
+    if (typeof counter !== "number" || typeof lastReset !== "number") {
+      await chrome.storage.local.set({
+        counter: MAX_CLICKS,
+        lastReset: now,
+      });
+    }
     dropper();
   } else {
     showNoSupport();
@@ -243,7 +255,7 @@ extpay
   .then(async (user) => {
     isPaidUser = user.paid;
     let { counter = MAX_CLICKS } = await chrome.storage.local.get("counter");
-    let { daysLeft = MAX_DAYS } = await chrome.storage.local.get("daysLeft");
+    let { hoursLeft = MAX_HOURS } = await chrome.storage.local.get("hoursLeft");
     if (user.paid) {
       init();
     } else if (!user.trialStartedAt && !user.subscriptionStatus) {
@@ -264,8 +276,8 @@ extpay
             "Please register for the extension in the Account section above to unlock infinite uses";
           document.getElementById(
             "reset-timer"
-          ).textContent = `Resets in: ${daysLeft} day${
-            daysLeft !== 1 ? "s" : ""
+          ).textContent = `Resets in: ${hoursLeft} hour${
+            hoursLeft !== 1 ? "s" : ""
           }`;
         } else {
           init();
@@ -281,11 +293,11 @@ extpay
           document.getElementById("reset-timer").hidden = false;
           if (counter <= 0) {
             document.getElementById("bottom").textContent =
-              "Weekly click limit reached. Please register for the extension in the Account section above to unlock infinite uses";
+              "Daily limit reached. Please register for the extension in the Account section above to unlock infinite uses";
             document.getElementById(
               "reset-timer"
-            ).textContent = `Resets in: ${daysLeft} day${
-              daysLeft !== 1 ? "s" : ""
+            ).textContent = `Resets in: ${hoursLeft} hour${
+              hoursLeft !== 1 ? "s" : ""
             }`;
           } else {
             init();
