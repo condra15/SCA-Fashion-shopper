@@ -10,11 +10,13 @@ let isPaidUser = false;
 async function getSeasonFromHex(hexColor, userS) {
   const url =
     "https://color-season-finder.p.rapidapi.com/api/seasonal-color-hex";
+  // const url =
+  //   "https://color-season-finder-api.onrender.com/api/seasonal-color-hex";
 
   const options = {
     method: "POST",
     headers: {
-      "x-rapidapi-key": "2595057010msh091d73199dab015p10bae0jsnf321d42d6941",
+      "x-rapidapi-key": "a58955344dmsh199f5558fa0a4a6p1b1db6jsn7d2b8f9b8c1f",
       "x-rapidapi-host": "color-season-finder.p.rapidapi.com",
       "Content-Type": "application/json",
     },
@@ -23,6 +25,17 @@ async function getSeasonFromHex(hexColor, userS) {
       userSeason: userS,
     }),
   };
+
+  // const options = {
+  //   method: "POST",
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //   },
+  //   body: JSON.stringify({
+  //     hex: hexColor,
+  //     userSeason: userS,
+  //   }),
+  // };
 
   try {
     const response = await fetch(url, options);
@@ -176,10 +189,10 @@ function dropper() {
     }
   });
 
-  function showResult(hex = "#FFFFFF") {
+  async function showResult(hex = "#FFFFFF") {
     var hsl = hextohsl(hex);
     var fit = $dropdown.value ? $dropdown.value : undefined;
-    var output = getSeasonFromHex(hex, fit);
+    var output = await getSeasonFromHex(hex, fit);
     $infobox.style.backgroundColor = hex;
     $scaInfo.style.backgroundColor = hex;
     $hexInfo.innerText = "Color:\n" + hex;
