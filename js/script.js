@@ -1,23 +1,24 @@
 const extpay = ExtPay("color-analysis-shopper");
 
 // Constants for weekly counter
-const MAX_CLICKS = 10;
-const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-const MAX_DAYS = 7;
+const MAX_CLICKS = 5;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 let isPaidUser = false;
 
 async function getSeasonFromHex(hexColor, userS) {
-  const url =
-    "https://color-season-finder.p.rapidapi.com/api/seasonal-color-hex";
+  if (typeof hexColor !== "string" || typeof userS !== "string") {
+    console.error("Invalid input: hexColor and userSeason must be strings.");
+    return null;
+  }
   // const url =
-  //   "https://color-season-finder-api.onrender.com/api/seasonal-color-hex";
+  //   "https://color-season-finder.p.rapidapi.com/api/seasonal-color-hex";
+  const url =
+    "https://color-season-finder-api.onrender.com/api/seasonal-color-hex";
 
   const options = {
     method: "POST",
     headers: {
-      "x-rapidapi-key": "a58955344dmsh199f5558fa0a4a6p1b1db6jsn7d2b8f9b8c1f",
-      "x-rapidapi-host": "color-season-finder.p.rapidapi.com",
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -25,17 +26,6 @@ async function getSeasonFromHex(hexColor, userS) {
       userSeason: userS,
     }),
   };
-
-  // const options = {
-  //   method: "POST",
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //   },
-  //   body: JSON.stringify({
-  //     hex: hexColor,
-  //     userSeason: userS,
-  //   }),
-  // };
 
   try {
     const response = await fetch(url, options);
@@ -120,25 +110,25 @@ function dropper() {
   const $softsummer = document.querySelector(".softsummer");
 
   async function loadState() {
-    const { counter = MAX_CLICKS, lastReset = 0 } =
-      await chrome.storage.local.get(["counter", "lastReset"]);
     const now = Date.now();
+    const { counter = MAX_CLICKS, lastReset = now } =
+      await chrome.storage.local.get(["counter", "lastReset"]);
 
-    if (now - lastReset >= ONE_WEEK_MS) {
+    if (now - lastReset >= ONE_DAY_MS) {
       await chrome.storage.local.set({ counter: MAX_CLICKS, lastReset: now });
       return { counter: MAX_CLICKS };
     }
 
-    const nextReset = lastReset + ONE_WEEK_MS;
+    const nextReset = lastReset + ONE_DAY_MS;
     const timeLeftMs = nextReset - now;
-    const daysLeft = Math.ceil(timeLeftMs / (1000 * 60 * 60 * 24));
+    const hoursLeft = Math.ceil(timeLeftMs / (1000 * 60 * 60));
     const $resetTimer = document.getElementById("reset-timer");
     if ($resetTimer) {
-      $resetTimer.textContent = `Resets in: ${daysLeft} day${
-        daysLeft !== 1 ? "s" : ""
+      $resetTimer.textContent = `Resets in: ${hoursLeft} hour${
+        hoursLeft !== 1 ? "s" : ""
       }`;
-      await chrome.storage.local.set({ daysLeft: daysLeft });
     }
+
     return { counter };
   }
 
