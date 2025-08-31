@@ -7,6 +7,29 @@ const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 let isPaidUser = false;
 
+async function loadState() {
+  const now = Date.now();
+  const { counter = MAX_CLICKS, lastReset = now } =
+    await chrome.storage.local.get(["counter", "lastReset"]);
+
+  if (now - lastReset >= ONE_DAY_MS) {
+    await chrome.storage.local.set({ counter: MAX_CLICKS, lastReset: now });
+    return { counter: MAX_CLICKS };
+  }
+
+  const nextReset = lastReset + ONE_DAY_MS;
+  const timeLeftMs = nextReset - now;
+  const hoursLeft = Math.ceil(timeLeftMs / (1000 * 60 * 60));
+  const $resetTimer = document.getElementById("reset-timer");
+  if ($resetTimer) {
+    $resetTimer.textContent = `Resets in: ${hoursLeft} hour${
+      hoursLeft !== 1 ? "s" : ""
+    }`;
+  }
+
+  return [counter, hoursLeft];
+}
+
 async function getSeasonFromHex(hexColor, userS) {
   if (typeof hexColor !== "string" || typeof userS !== "string") {
     console.error("Invalid input: hexColor and userSeason must be strings.");
@@ -109,29 +132,6 @@ function dropper() {
   const $lightspring = document.querySelector(".lightspring");
   const $softsummer = document.querySelector(".softsummer");
 
-  async function loadState() {
-    const now = Date.now();
-    const { counter = MAX_CLICKS, lastReset = now } =
-      await chrome.storage.local.get(["counter", "lastReset"]);
-
-    if (now - lastReset >= ONE_DAY_MS) {
-      await chrome.storage.local.set({ counter: MAX_CLICKS, lastReset: now });
-      return { counter: MAX_CLICKS };
-    }
-
-    const nextReset = lastReset + ONE_DAY_MS;
-    const timeLeftMs = nextReset - now;
-    const hoursLeft = Math.ceil(timeLeftMs / (1000 * 60 * 60));
-    const $resetTimer = document.getElementById("reset-timer");
-    if ($resetTimer) {
-      $resetTimer.textContent = `Resets in: ${hoursLeft} hour${
-        hoursLeft !== 1 ? "s" : ""
-      }`;
-    }
-
-    return { counter };
-  }
-
   async function updateCounter(newCount) {
     $find.disabled = newCount === 0;
     await chrome.storage.local.set({ counter: newCount });
@@ -166,7 +166,7 @@ function dropper() {
 
   document.addEventListener("DOMContentLoaded", async () => {
     if (!isPaidUser) {
-      const { counter } = await loadState();
+      const [counter, hoursLeft] = await loadState();
       $find.disabled = counter <= 0;
     }
   });
@@ -254,8 +254,7 @@ extpay
   .getUser()
   .then(async (user) => {
     isPaidUser = user.paid;
-    let { counter = MAX_CLICKS } = await chrome.storage.local.get("counter");
-    let { hoursLeft = MAX_HOURS } = await chrome.storage.local.get("hoursLeft");
+    let [counter, hoursLeft] = await loadState();
     if (user.paid) {
       init();
     } else if (!user.trialStartedAt && !user.subscriptionStatus) {
@@ -273,7 +272,7 @@ extpay
         document.getElementById("reset-timer").hidden = false;
         if (counter <= 0) {
           document.getElementById("bottom").textContent =
-            "Please register for the extension in the Account section above to unlock infinite uses";
+            "Daily limit reached. Please register for the extension in the Account section above to unlock infinite uses";
           document.getElementById(
             "reset-timer"
           ).textContent = `Resets in: ${hoursLeft} hour${
@@ -305,7 +304,7 @@ extpay
         }
       } else {
         document.getElementById("bottom").textContent =
-          "Please register for the extension in the Account section above to unlock infinite uses";
+          "Daily limit reached. Please register for the extension in the Account section above to unlock infinite uses";
       }
     }
   })
