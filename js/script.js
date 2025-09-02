@@ -155,7 +155,7 @@ function dropper() {
           const { counter } = await chrome.storage.local.get("counter");
           const newCount = counter - 1;
           document.getElementById("count").innerHTML =
-            "Usage count left today: " + newCount;
+            "Daily usage count remaining: " + newCount;
           await updateCounter(newCount);
         }
       }
