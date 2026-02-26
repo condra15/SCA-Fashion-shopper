@@ -37,8 +37,7 @@ async function getSeasonFromHex(hexColor, userS) {
   }
   // const url =
   //   "https://color-season-finder.p.rapidapi.com/api/seasonal-color-hex";
-  const url =
-    "https://color-season-finder-api.onrender.com/api/seasonal-color-hex";
+  const url = "https://cleo-api-toq2.onrender.com/api/seasonal-color-hex";
 
   const options = {
     method: "POST",
@@ -76,7 +75,7 @@ function hextohsl(hex) {
   var g = parseInt(result[2], 16);
   var b = parseInt(result[3], 16);
 
-  (r /= 255), (g /= 255), (b /= 255);
+  ((r /= 255), (g /= 255), (b /= 255));
   var max = Math.max(r, g, b);
   var min = Math.min(r, g, b);
   var h,
@@ -273,11 +272,8 @@ extpay
         if (counter <= 0) {
           document.getElementById("bottom").textContent =
             "Daily limit reached. Please register for the extension in the Account section above to unlock infinite uses";
-          document.getElementById(
-            "reset-timer"
-          ).textContent = `Resets in: ${hoursLeft} hour${
-            hoursLeft !== 1 ? "s" : ""
-          }`;
+          document.getElementById("reset-timer").textContent =
+            `Resets in: ${hoursLeft} hour${hoursLeft !== 1 ? "s" : ""}`;
         } else {
           init();
         }
@@ -293,11 +289,8 @@ extpay
           if (counter <= 0) {
             document.getElementById("bottom").textContent =
               "Daily limit reached. Please register for the extension in the Account section above to unlock infinite uses";
-            document.getElementById(
-              "reset-timer"
-            ).textContent = `Resets in: ${hoursLeft} hour${
-              hoursLeft !== 1 ? "s" : ""
-            }`;
+            document.getElementById("reset-timer").textContent =
+              `Resets in: ${hoursLeft} hour${hoursLeft !== 1 ? "s" : ""}`;
           } else {
             init();
           }
