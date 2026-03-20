@@ -1,69 +1,97 @@
-<link rel="stylesheet" href="style/style.css" type="text/css">
-<link href="https://fonts.googleapis.com/css2?family=Fredericka+the+Great&display=swap" rel="stylesheet">
-<script type="module" src="js/script.js"></script>
-<script src="ExtPay.js"></script>
-
-<header>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="style/style.css" type="text/css">
+  <link rel="stylesheet" href="style/popup-size.css" type="text/css">
+  <link rel="stylesheet" href="style/analyze.css" type="text/css">
+  <script type="module" src="js/script.js"></script>
+</head>
+<body>
+  <header>
     <nav>
-        <ul class="nav">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="routes/tutorial.html">Tutorial</a></li>
-            <li><a href="routes/about.html">Find Your Season</a></li>
-            <!-- <li><a href="routes/favs.html">Favorites</a></li> -->
-            <li><a href="routes/login.html">Account</a></li>
-        </ul>
+      <ul class="nav">
+        <li><a href="index.html" class="active">Analyze</a></li>
+        <li><a href="pages/tutorial.html">Tutorial</a></li>
+        <li><a href="pages/about.html">My Season</a></li>
+        <li><a href="pages/login.html">Account</a></li>
+      </ul>
     </nav>
-</header>
-<div id="container" class="container">
-    <h1 class="heading">Color Season Finder</h1>
+  </header>
+
+  <div class="container">
+    <h1 class="heading">Color Season <em>Finder</em></h1>
+
     <div class="btn-box">
-        <select name="picker" class="btn pick" id="picker">
-            <option disabled selected>Select your season:</option>
-            <option value="Dark Winter">Dark Winter</option>
-            <option value="True Winter">True Winter</option>
-            <option value="Bright Winter">Bright Winter</option>
-            <option value="Bright Spring">Bright Spring</option>
-            <option value="True Spring">True Spring</option>
-            <option value="Light Spring">Light Spring</option>
-            <option value="Light Summer">Light Summer</option>
-            <option value="True Summer">True Summer</option>
-            <option value="Soft Summer">Soft Summer</option>
-            <option value="Soft Autumn">Soft Autumn</option>
-            <option value="True Autumn">True Autumn</option>
-            <option value="Dark Autumn">Dark Autumn</option>
-        </select>
-        <button class="btn find">Find Color Season</button>
+      <select id="seasonSelect" class="pick">
+        <option value="" disabled selected>Select your season</option>
+        <option value="Bright Spring">Bright Spring</option>
+        <option value="True Spring">True Spring</option>
+        <option value="Light Spring">Light Spring</option>
+        <option value="Light Summer">Light Summer</option>
+        <option value="True Summer">True Summer</option>
+        <option value="Soft Summer">Soft Summer</option>
+        <option value="Soft Autumn">Soft Autumn</option>
+        <option value="True Autumn">True Autumn</option>
+        <option value="Dark Autumn">Dark Autumn</option>
+        <option value="Dark Winter">Dark Winter</option>
+        <option value="True Winter">True Winter</option>
+        <option value="Bright Winter">Bright Winter</option>
+      </select>
+
+      <button id="dropperBtn" class="find">Find Color Season</button>
     </div>
-    <div class="infobox">
-        <p class="info hex">Color: - <br></p>
-        <p class="info result">Result: - <br></p>
-        <p class="info season">Select your season<br></p>
+
+    <!-- Result display — fills with picked color -->
+    <div id="result-box" class="result-box">
+      <div id="result-hex" class="result-hex"></div>
+      <div id="result-rating" class="result-rating"></div>
+      <div id="result-season" class="result-season"></div>
+      <div id="result-empty" class="result-empty">Pick a color to analyze</div>
     </div>
-    <div id="bottom" class="bottom">
-        <div class="sca-info">Color<br>Season</div>
-        <div class="wheel">
-            <span style="--i:0;"></span>
-            <span style="--i:1;"></span>
-            <span style="--i:2;"></span>
-            <span style="--i:3;"></span>
-            <span style="--i:4;"></span>
-            <span style="--i:5;"></span>
-            <div class="words">
-                <b style="--i:0;"> <div>Bright<br>Spring</div><br><div class="brightspring outputs">-</div></b>
-                <b style="--i:1;"> <div>True<br>Spring</div><br><div class="truspring outputs">-</div></b>
-                <b style="--i:2;"> <div>Light<br>Spring</div><br><div class="lightspring outputs">-</div></b>
-                <b style="--i:3;"> <div style="transform: rotate(180deg);">Light<br>Summer</div><br><div style="transform: rotate(180deg);" class="lightsummer outputs">-</div></b>
-                <b style="--i:4;"> <div style="transform: rotate(180deg);">True<br>Summer</div><br><div style="transform: rotate(180deg);" class="trusummer outputs">-</div></b>
-                <b style="--i:5;"> <div style="transform: rotate(180deg);">Soft<br>Summer</div><br><div style="transform: rotate(180deg);" class="softsummer outputs">-</div></b>
-                <b style="--i:6;"> <div style="transform: rotate(180deg);">Soft<br>Autumn</div><br><div style="transform: rotate(180deg);" class="softautumn outputs">-</div></b>
-                <b style="--i:7;"> <div style="transform: rotate(180deg);">True<br>Autumn</div><br><div style="transform: rotate(180deg);" class="truautumn outputs">-</div></b>
-                <b style="--i:8;"> <div style="transform: rotate(180deg);">Dark<br>Autumn</div><br><div style="transform: rotate(180deg);" class="darkautumn outputs">-</div></b>
-                <b style="--i:9;"> <div>Dark<br>Winter</div><br><div class="darkwinter outputs">-</div></b>
-                <b style="--i:10;"> <div>True<br>Winter</div><br><div class="truwinter outputs">-</div></b>
-                <b style="--i:11;"> <div>Bright<br>Winter</div><br><div class="brightwinter outputs">-</div></b>
-            </div>
-        </div>
+
+    <!-- Usage counter -->
+    <div id="count"><span id="counter"></span></div>
+
+    <!-- Compact SVG season wheel -->
+    <div class="wheel-wrap">
+      <svg id="season-wheel" viewBox="0 0 160 160" width="160" height="160">
+        <g transform="translate(80,80)">
+          <!-- 12 season segments — order: BS, TS, LS, LSu, TSu, SS, SA, TA, DA, DW, TW, BW -->
+          <path id="seg-0" d="M0,-72 A72,72 0 0,1 36,-62.35 L0,0Z" fill="#FF6F61" opacity="0.7" data-season="Bright Spring"/>
+          <path id="seg-1" d="M36,-62.35 A72,72 0 0,1 62.35,-36 L0,0Z" fill="#FFB830" opacity="0.7" data-season="True Spring"/>
+          <path id="seg-2" d="M62.35,-36 A72,72 0 0,1 72,0 L0,0Z" fill="#FFDAB3" opacity="0.7" data-season="Light Spring"/>
+          <path id="seg-3" d="M72,0 A72,72 0 0,1 62.35,36 L0,0Z" fill="#A8C8E8" opacity="0.7" data-season="Light Summer"/>
+          <path id="seg-4" d="M62.35,36 A72,72 0 0,1 36,62.35 L0,0Z" fill="#C4A0B0" opacity="0.7" data-season="True Summer"/>
+          <path id="seg-5" d="M36,62.35 A72,72 0 0,1 0,72 L0,0Z" fill="#B0A8C0" opacity="0.7" data-season="Soft Summer"/>
+          <path id="seg-6" d="M0,72 A72,72 0 0,1 -36,62.35 L0,0Z" fill="#C4B08C" opacity="0.7" data-season="Soft Autumn"/>
+          <path id="seg-7" d="M-36,62.35 A72,72 0 0,1 -62.35,36 L0,0Z" fill="#C07040" opacity="0.7" data-season="True Autumn"/>
+          <path id="seg-8" d="M-62.35,36 A72,72 0 0,1 -72,0 L0,0Z" fill="#7A6030" opacity="0.7" data-season="Dark Autumn"/>
+          <path id="seg-9" d="M-72,0 A72,72 0 0,1 -62.35,-36 L0,0Z" fill="#3C3060" opacity="0.7" data-season="Dark Winter"/>
+          <path id="seg-10" d="M-62.35,-36 A72,72 0 0,1 -36,-62.35 L0,0Z" fill="#4060A8" opacity="0.7" data-season="True Winter"/>
+          <path id="seg-11" d="M-36,-62.35 A72,72 0 0,1 0,-72 L0,0Z" fill="#D03070" opacity="0.7" data-season="Bright Winter"/>
+
+          <!-- Initials -->
+          <text class="seg-label" id="lbl-0" x="12" y="-50" data-season="Bright Spring">BS</text>
+          <text class="seg-label" id="lbl-1" x="40" y="-32" data-season="True Spring">TS</text>
+          <text class="seg-label" id="lbl-2" x="50" y="-8" data-season="Light Spring">LS</text>
+          <text class="seg-label" id="lbl-3" x="50" y="18" data-season="Light Summer">LSu</text>
+          <text class="seg-label" id="lbl-4" x="36" y="40" data-season="True Summer">TSu</text>
+          <text class="seg-label" id="lbl-5" x="10" y="52" data-season="Soft Summer">SS</text>
+          <text class="seg-label" id="lbl-6" x="-14" y="52" data-season="Soft Autumn">SA</text>
+          <text class="seg-label" id="lbl-7" x="-38" y="38" data-season="True Autumn">TA</text>
+          <text class="seg-label" id="lbl-8" x="-52" y="14" data-season="Dark Autumn">DA</text>
+          <text class="seg-label" id="lbl-9" x="-52" y="-12" data-season="Dark Winter">DW</text>
+          <text class="seg-label" id="lbl-10" x="-38" y="-36" data-season="True Winter">TW</text>
+          <text class="seg-label" id="lbl-11" x="-12" y="-50" data-season="Bright Winter">BW</text>
+
+          <!-- Center circle -->
+          <circle id="wheel-center" cx="0" cy="0" r="28" fill="#fdf8f5" stroke="rgba(242,196,206,0.6)" stroke-width="1.5"/>
+          <text id="center-line1" x="0" y="-3" class="center-text">Your</text>
+          <text id="center-line2" x="0" y="8" class="center-text">Season</text>
+        </g>
+      </svg>
     </div>
-    <div id="count" hidden></div>
-    <div id="reset-timer" hidden></div>
-</div>
+  </div>
+</body>
+</html>

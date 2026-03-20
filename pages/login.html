@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../style/style.css" type="text/css">
+  <link rel="stylesheet" href="../style/popup-size.css" type="text/css">
+  <link rel="stylesheet" href="../style/pages.css" type="text/css">
+  <script type="module" src="../js/login.js"></script>
+</head>
+<body>
+  <header>
+    <nav>
+      <ul class="nav">
+        <li><a href="../index.html">Analyze</a></li>
+        <li><a href="tutorial.html">Tutorial</a></li>
+        <li><a href="about.html">My Season</a></li>
+        <li><a href="login.html" class="active">Account</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="container">
+
+    <!-- ─── Auth Form (shown when signed out) ─── -->
+    <div id="auth-section" style="display: none;">
+      <h1 class="heading" style="font-size: 20px; margin-bottom: 4px;">Welcome to <em>Cleo</em></h1>
+      <p class="page-intro" style="margin-bottom: 10px;">Sign in or create an account to access color analysis.</p>
+
+      <div class="btn-box" style="gap: 6px; margin-bottom: 6px;">
+        <input type="email" id="email-input" class="pick" placeholder="Email address" autocomplete="email" style="padding: 7px 12px; font-size: 12px;">
+        <input type="password" id="password-input" class="pick" placeholder="Password" autocomplete="current-password"
+          style="padding: 7px 12px; font-size: 12px; -webkit-text-security: disc; background-image: none;">
+      </div>
+
+      <div class="btn-box" style="gap: 6px; margin-bottom: 0;">
+        <button id="sign-in-btn" class="find" style="padding: 9px; font-size: 11px; margin-top: 0;">Sign In</button>
+        <button id="sign-up-btn" class="btn btn-ghost" style="width: 100%; font-size: 11px; padding: 7px;">Create Account</button>
+      </div>
+
+      <div style="text-align: center; margin-top: 4px;">
+        <button id="forgot-password-btn" class="btn btn-ghost" style="font-size: 10px; border: none; padding: 3px 6px;">
+          Forgot password?
+        </button>
+      </div>
+
+      <div id="auth-error" class="error" style="display: none; font-size: 11px; padding: 6px; margin-top: 6px;"></div>
+      <div id="auth-success" class="tip-card" style="display: none; margin-top: 8px; padding: 8px 10px;">
+        <span class="tip-label">Done</span>
+        <p id="auth-success-text" style="font-size: 11px;"></p>
+      </div>
+
+      <div class="tip-card" style="margin-top: 10px; padding: 8px 10px;">
+        <span class="tip-label">New?</span>
+        <p style="font-size: 11px;">Create an account to get started with 5 free color lookups per day.</p>
+      </div>
+    </div>
+
+    <!-- ─── Account View (shown when signed in) ─── -->
+    <div id="account-section" style="display: none;">
+      <h1 class="heading" style="font-size: 20px; margin-bottom: 6px;">Your Account</h1>
+
+      <!-- Account info card -->
+      <div class="method-card" style="margin-top: 8px; padding: 10px 14px;">
+        <div class="step" style="padding: 8px 0; gap: 10px;">
+          <div class="step-num" style="font-size: 9px; width: 22px; height: 22px;">@</div>
+          <div class="step-body">
+            <strong style="font-size: 12px;">Email</strong>
+            <p id="user-email" style="font-size: 11px;">—</p>
+          </div>
+        </div>
+        <div class="step" style="padding: 8px 0; gap: 10px;">
+          <div class="step-num" style="font-size: 9px; width: 22px; height: 22px;">✦</div>
+          <div class="step-body">
+            <strong style="font-size: 12px;">Plan</strong>
+            <p id="account-plan" style="font-size: 11px;">—</p>
+          </div>
+        </div>
+        <div class="step" style="padding: 8px 0; gap: 10px; border-bottom: none;">
+          <div class="step-num" style="font-size: 9px; width: 22px; height: 22px;">◎</div>
+          <div class="step-body">
+            <strong style="font-size: 12px;">Usage This Week</strong>
+            <p id="usage-display" style="font-size: 11px;">—</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upgrade section (shown for free users) -->
+      <div id="upgrade-section" style="display: none;">
+        <h3 style="margin-top: 10px; font-size: 14px; margin-bottom: 6px;">Upgrade for Unlimited</h3>
+
+        <div class="method-card" style="padding: 0 14px;">
+          <div class="step" style="padding: 8px 0; cursor: pointer;" data-plan="monthly">
+            <div class="step-body" style="width: 100%;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <strong style="font-size: 12px;">Monthly</strong>
+                <span class="tag tag-half" style="font-size: 9px;">$0.99/mo</span>
+              </div>
+            </div>
+          </div>
+          <div class="step" style="padding: 8px 0; cursor: pointer;" data-plan="yearly">
+            <div class="step-body" style="width: 100%;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <strong style="font-size: 12px;">Yearly</strong>
+                <span class="tag tag-pure" style="font-size: 9px;">$9.99/yr</span>
+              </div>
+              <p style="font-size: 10px; color: var(--ink-faint); margin-top: 1px;">Save 17%</p>
+            </div>
+          </div>
+          <div class="step" style="padding: 8px 0; border-bottom: none; cursor: pointer;" data-plan="lifetime">
+            <div class="step-body" style="width: 100%;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <strong style="font-size: 12px;">Lifetime</strong>
+                <span class="tag tag-near" style="font-size: 9px;">$29.99</span>
+              </div>
+              <p style="font-size: 10px; color: var(--ink-faint); margin-top: 1px;">One-time, forever</p>
+            </div>
+          </div>
+        </div>
+
+        <button id="subscribe-btn" class="find" style="padding: 9px; font-size: 11px; margin-top: 8px;">Upgrade Now</button>
+      </div>
+
+      <!-- Manage subscription (shown for paid users) -->
+      <div id="manage-section" style="display: none; margin-top: 8px;">
+        <button id="manage-sub-btn" class="btn btn-ghost" style="width: 100%; font-size: 11px; padding: 7px;">Manage Subscription</button>
+      </div>
+
+      <!-- Actions -->
+      <div style="margin-top: 10px;">
+        <button id="sign-out-btn" class="btn btn-ghost" style="width: 100%; font-size: 11px; padding: 7px;">Sign Out</button>
+      </div>
+
+      <div class="tip-card" style="margin-top: 10px; padding: 8px 10px;">
+        <span class="tip-label">Tip</span>
+        <p style="font-size: 11px;">If you enjoy this extension, please leave a review on the Chrome Store!</p>
+      </div>
+
+      <!-- Delete account -->
+      <div style="text-align: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(242,196,206,0.3);">
+        <button id="delete-account-btn" style="
+          background: none; border: none; color: var(--ink-faint);
+          font-family: var(--font-body); font-size: 10px;
+          cursor: pointer; padding: 3px 6px; transition: color 0.2s;
+        ">Delete Account</button>
+      </div>
+
+      <!-- Delete confirmation -->
+      <div id="delete-confirm" style="display: none; margin-top: 8px;">
+        <div class="method-card" style="border-color: #f0a0a8; padding: 10px 14px;">
+          <strong style="color: #c0404a; font-size: 12px; display: block; margin-bottom: 4px;">Are you sure?</strong>
+          <p style="font-size: 11px; color: var(--ink-soft); margin-bottom: 8px;">This will permanently delete your account and all data. This cannot be undone.</p>
+          <div style="display: flex; gap: 6px;">
+            <button id="delete-confirm-btn" class="btn" style="
+              background: #c0404a; color: white; flex: 1; font-size: 10px; padding: 7px;
+            ">Yes, Delete</button>
+            <button id="delete-cancel-btn" class="btn btn-ghost" style="flex: 1; font-size: 10px; padding: 7px;">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

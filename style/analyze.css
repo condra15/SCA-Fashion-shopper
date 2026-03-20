@@ -1,0 +1,172 @@
+/* ─────────────────────────────────────────────
+   Cleo Extension — Analyze Page Overrides
+   Compact result box + SVG wheel
+   Tightened to fit within 420px popup
+───────────────────────────────────────────── */
+
+/* ── Tighten heading on analyze page ──────── */
+.heading {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+  
+  /* ── Tighten season picker + button ───────── */
+  .btn-box {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  
+  .pick {
+    padding: 7px 12px;
+    padding-right: 32px;
+    font-size: 12px;
+  }
+  
+  .find {
+    padding: 9px;
+    font-size: 11px;
+    margin-top: 0;
+  }
+  
+  /* ── Result Box ───────────────────────────── */
+  .result-box {
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    margin-bottom: 6px;
+    position: relative;
+    min-height: 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--petal);
+    border: 1px solid rgba(242, 196, 206, 0.4);
+  }
+  
+  .result-box.has-result {
+    border: none;
+  }
+  
+  .result-hex {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: 10px;
+    font-family: monospace;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  
+  .result-box.has-result .result-hex {
+    opacity: 1;
+  }
+  
+  .result-rating {
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.1;
+    margin-bottom: 0;
+    display: none;
+  }
+  
+  .result-box.has-result .result-rating {
+    display: block;
+  }
+  
+  .result-season {
+    font-size: 12px;
+    display: none;
+  }
+  
+  .result-box.has-result .result-season {
+    display: block;
+  }
+  
+  .result-empty {
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 12px;
+    font-style: italic;
+    padding: 2px 0;
+  }
+  
+  .result-box.has-result .result-empty {
+    display: none;
+  }
+  
+  .result-box.loading {
+    background: linear-gradient(90deg, #ede0e8 25%, #f5eaf2 50%, #ede0e8 75%);
+    background-size: 200% 100%;
+    animation: result-shimmer 1.2s ease-in-out infinite;
+    border: none;
+  }
+  
+  .result-box.loading .result-empty {
+    display: none;
+  }
+  
+  @keyframes result-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  
+  /* ── Counter ──────────────────────────────── */
+  #count {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    font-size: 10px;
+  }
+  
+  /* ── SVG Wheel ────────────────────────────── */
+  .wheel-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 4px;
+    margin-bottom: 0;
+  }
+  
+  .wheel-wrap svg {
+    display: block;
+  }
+  
+  .seg-label {
+    font-size: 8px;
+    font-weight: 500;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    fill: var(--ink);
+    transition: fill 0.3s, font-size 0.3s;
+  }
+  
+  .seg-label.on-dark {
+    fill: #fff;
+  }
+  
+  .seg-label.faded {
+    fill: var(--ink-faint);
+  }
+  
+  .seg-label.active {
+    font-size: 9px;
+  }
+  
+  .center-text {
+    font-size: 7.5px;
+    font-weight: 500;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    fill: var(--ink-soft);
+    transition: fill 0.3s;
+  }
+  
+  /* ── Hide old wheel CSS ───────────────────── */
+  .bottom,
+  .wheel:not(.wheel-wrap *),
+  .words,
+  .sca-info,
+  .infobox,
+  .color-swatch,
+  .infobox-text,
+  .infobox-empty {
+    display: none !important;
+  }

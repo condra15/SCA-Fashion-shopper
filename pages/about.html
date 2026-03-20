@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../style/style.css" type="text/css">
+  <link rel="stylesheet" href="../style/popup-size.css" type="text/css">
+  <link rel="stylesheet" href="../style/pages.css" type="text/css">
+  <style>
+    /* ── Collapsible method cards ── */
+    details.method-card {
+      cursor: default;
+    }
+
+    details.method-card summary {
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 0;
+      user-select: none;
+    }
+
+    details.method-card summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.method-card summary::after {
+      content: '';
+      margin-left: auto;
+      width: 8px;
+      height: 8px;
+      border-right: 1.5px solid var(--ink-soft);
+      border-bottom: 1.5px solid var(--ink-soft);
+      transform: rotate(-45deg);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+
+    details[open].method-card summary::after {
+      transform: rotate(45deg);
+    }
+
+    details.method-card summary .method-num,
+    details.method-card summary strong {
+      pointer-events: none;
+    }
+
+    details.method-card .method-content {
+      padding-top: 12px;
+      margin-top: 10px;
+      border-top: 1px solid rgba(242,196,206,0.4);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <ul class="nav">
+        <li><a href="../index.html">Analyze</a></li>
+        <li><a href="tutorial.html">Tutorial</a></li>
+        <li><a href="about.html" class="active">My Season</a></li>
+        <li><a href="login.html">Account</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="container">
+    <h1 class="heading" style="font-size: 20px; margin-bottom: 4px;">Finding Your <em>Season</em></h1>
+    <p class="page-intro" style="margin-bottom: 10px;">Two methods to determine your color season.</p>
+
+    <div class="tip-card" style="padding: 8px 10px; margin-bottom: 12px;">
+      <span class="tip-label">Note</span>
+      <p style="font-size: 11px;">Chroma = color intensity. Pure/intense = saturated. Duller = muted.</p>
+    </div>
+
+    <!-- Method 1: Collapsible -->
+    <details class="method-card" style="margin-bottom: 10px;">
+      <summary>
+        <span class="method-num">Method 1</span>
+        <strong style="font-size: 13px;">The Jewelry Test</strong>
+      </summary>
+
+      <div class="method-content">
+        <div class="method-step">
+          <p style="font-size: 11px;"><strong>Step 1:</strong> Do you look better in gold or silver jewelry? Gold = warm (Autumn/Spring). Silver = cool (Summer/Winter). Can't tell? You may fall between seasons.</p>
+        </div>
+
+        <div class="method-step">
+          <p style="font-size: 11px;"><strong>Step 2:</strong> Of your favorite clothes (not black/white/grey), which pattern below matches your warmth?</p>
+        </div>
+
+        <div class="method-step">
+          <p style="font-size: 11px;"><strong>Step 3:</strong> Fit one season = True version. Between two = your skin warmth decides. Both work great with this extension.</p>
+        </div>
+
+        <!-- Season table -->
+        <div class="season-table" style="margin: 10px 0 4px;">
+          <div class="season-table-header">
+            <span></span>
+            <span>High Saturation</span>
+            <span>Low Saturation</span>
+          </div>
+          <div class="season-table-row">
+            <div class="row-label">High<br>Brightness</div>
+            <div class="season-cell warm">
+              <strong style="font-size: 11px;">Spring</strong>
+              <small style="font-size: 9px;">bright, clear</small>
+            </div>
+            <div class="season-cell cool">
+              <strong style="font-size: 11px;">Summer</strong>
+              <small style="font-size: 9px;">bright, muted</small>
+            </div>
+          </div>
+          <div class="season-table-row">
+            <div class="row-label">Low<br>Brightness</div>
+            <div class="season-cell cool">
+              <strong style="font-size: 11px;">Winter</strong>
+              <small style="font-size: 9px;">dark, clear</small>
+            </div>
+            <div class="season-cell warm">
+              <strong style="font-size: 11px;">Autumn</strong>
+              <small style="font-size: 9px;">dark, muted</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- Method 2: Collapsible -->
+    <details class="method-card">
+      <summary>
+        <span class="method-num">Method 2</span>
+        <strong style="font-size: 13px;">Use This Extension</strong>
+      </summary>
+
+      <div class="method-content">
+        <div class="method-step">
+          <p style="font-size: 11px;"><strong>Step 1:</strong> Find pictures of clothes you've gotten lots of compliments on.</p>
+        </div>
+
+        <div class="method-step">
+          <p style="font-size: 11px;"><strong>Step 2:</strong> Use the Analyze tab to eyedrop those clothes in neutral lighting (or on the store's website) to find their color season. The pattern reveals yours.</p>
+        </div>
+      </div>
+    </details>
+  </div>
+</body>
+</html>

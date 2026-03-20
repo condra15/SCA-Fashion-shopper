@@ -1,8 +1,12 @@
 {
-    "name": "Color Season Finder: Style & Shopping Assistant",
-    "version": "1.2.2",
-    "description": "Eyedrop any color on your screen and get its seasonal color match and hex code — shop smarter, design better, style with confidence",
-    "permissions": ["storage","scripting", "activeTab"],
+    "name": "Color Season Match: Style & Shopping Assistant",
+    "version": "2.0.0",
+    "description": "Eyedrop any color on screen to instantly get its color code and color season and compare to yours. Shop smarter, style with confidence.",
+    "permissions": [
+        "storage",
+        "scripting",
+        "activeTab"
+    ],
     "icons": {
         "16": "icons/icon16.png",
         "32": "icons/icon32.png",
@@ -14,13 +18,6 @@
     },
     "manifest_version": 3,
     "author": "Chris Yankah",
-    "content_scripts": [
-        {
-            "matches": ["https://extensionpay.com/*"],
-            "js": ["ExtPay.js"],
-            "run_at": "document_start"
-        }
-    ],
     "action": {
         "default_popup": "index.html",
         "default_title": "Color Season Finder"

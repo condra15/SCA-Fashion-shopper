@@ -1,307 +1,387 @@
-const extpay = ExtPay("color-analysis-shopper");
+/**
+ * Cleo Chrome Extension — Main Script
+ * Supabase Auth + Hybrid Weekly Counter + New Compact UI
+ */
 
-// Constants for daily counter
-const MAX_CLICKS = 5;
-const MAX_HOURS = 24;
-const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+import {
+  isSignedIn,
+  getTrialStatus,
+  analyzeColor,
+  apiRequest,
+} from "./auth.js";
 
-let isPaidUser = false;
+// ─── Constants ───────────────────────────────────────────────────────────────
 
-async function loadState() {
-  const now = Date.now();
-  const { counter = MAX_CLICKS, lastReset = now } =
-    await chrome.storage.local.get(["counter", "lastReset"]);
+const MAX_FREE_WEEKLY = 25;
 
-  if (now - lastReset >= ONE_DAY_MS) {
-    await chrome.storage.local.set({ counter: MAX_CLICKS, lastReset: now });
-    return { counter: MAX_CLICKS };
+// Season order must match SVG segment order (seg-0 through seg-11)
+const SEASONS_ORDER = [
+  "Bright Spring",
+  "True Spring",
+  "Light Spring",
+  "Light Summer",
+  "True Summer",
+  "Soft Summer",
+  "Soft Autumn",
+  "True Autumn",
+  "Dark Autumn",
+  "Dark Winter",
+  "True Winter",
+  "Bright Winter",
+];
+
+// Default season colors for the wheel (used to restore after result)
+const SEASON_COLORS = {
+  "Bright Spring": "#FF6F61",
+  "True Spring": "#FFB830",
+  "Light Spring": "#FFDAB3",
+  "Light Summer": "#A8C8E8",
+  "True Summer": "#C4A0B0",
+  "Soft Summer": "#B0A8C0",
+  "Soft Autumn": "#C4B08C",
+  "True Autumn": "#C07040",
+  "Dark Autumn": "#7A6030",
+  "Dark Winter": "#3C3060",
+  "True Winter": "#4060A8",
+  "Bright Winter": "#D03070",
+};
+
+// Segments with dark fills need white text by default
+const DARK_SEGMENTS = [
+  "True Autumn",
+  "Dark Autumn",
+  "Dark Winter",
+  "True Winter",
+  "Bright Winter",
+];
+
+// ─── State ───────────────────────────────────────────────────────────────────
+
+let accessLevel = "none";
+let freeCounter = 0;
+
+// ─── DOM References ──────────────────────────────────────────────────────────
+
+const seasonSelect = document.getElementById("seasonSelect");
+const dropperBtn = document.getElementById("dropperBtn");
+const resultBox = document.getElementById("result-box");
+const resultHex = document.getElementById("result-hex");
+const resultRating = document.getElementById("result-rating");
+const resultSeason = document.getElementById("result-season");
+const resultEmpty = document.getElementById("result-empty");
+const counterDisplay = document.getElementById("counter");
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+
+document.addEventListener("DOMContentLoaded", async () => {
+  // Load saved season
+  const { savedSeason } = await chrome.storage.local.get("savedSeason");
+  if (savedSeason && seasonSelect) {
+    seasonSelect.value = savedSeason;
   }
 
-  const nextReset = lastReset + ONE_DAY_MS;
-  const timeLeftMs = nextReset - now;
-  const hoursLeft = Math.ceil(timeLeftMs / (1000 * 60 * 60));
-  const $resetTimer = document.getElementById("reset-timer");
-  if ($resetTimer) {
-    $resetTimer.textContent = `Resets in: ${hoursLeft} hour${
-      hoursLeft !== 1 ? "s" : ""
-    }`;
+  if (seasonSelect) {
+    seasonSelect.addEventListener("change", () => {
+      chrome.storage.local.set({ savedSeason: seasonSelect.value });
+    });
   }
 
-  return [counter, hoursLeft];
-}
+  // Apply default dark-label classes
+  DARK_SEGMENTS.forEach((season) => {
+    const idx = SEASONS_ORDER.indexOf(season);
+    const lbl = document.getElementById(`lbl-${idx}`);
+    if (lbl) lbl.classList.add("on-dark");
+  });
 
-async function getSeasonFromHex(hexColor, userS) {
-  if (typeof hexColor !== "string" || typeof userS !== "string") {
-    console.error("Invalid input: hexColor and userSeason must be strings.");
-    return null;
+  await checkAccessLevel();
+  updateCounterDisplay();
+
+  if (dropperBtn) {
+    dropperBtn.addEventListener("click", initDropper);
   }
-  // const url =
-  //   "https://color-season-finder.p.rapidapi.com/api/seasonal-color-hex";
-  const url = "https://cleo-api-toq2.onrender.com/api/seasonal-color-hex";
 
-  const options = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      hex: hexColor,
-      userSeason: userS,
-    }),
-  };
+  // Restore last result if available
+  const { lastResult } = await chrome.storage.local.get("lastResult");
+  if (lastResult) {
+    showResult(lastResult.hex, lastResult.result);
+  }
+});
+
+// ─── Access Level ────────────────────────────────────────────────────────────
+
+async function checkAccessLevel() {
+  const signedIn = await isSignedIn();
+  if (!signedIn) {
+    accessLevel = "none";
+    return;
+  }
 
   try {
-    const response = await fetch(url, options);
-    const data = await response.json();
-    return data.result;
-  } catch (error) {
-    console.error("Error fetching season:", error);
-    return null;
-  }
-}
-
-function showNoSupport() {
-  const $body = document.querySelector("container");
-  const $message = document.createElement("p");
-  $message.classList.add("error");
-  $message.innerHTML = "Your browser does not support this extension";
-  $body.appendChild($message);
-}
-
-function hextohsl(hex) {
-  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-
-  var r = parseInt(result[1], 16);
-  var g = parseInt(result[2], 16);
-  var b = parseInt(result[3], 16);
-
-  ((r /= 255), (g /= 255), (b /= 255));
-  var max = Math.max(r, g, b);
-  var min = Math.min(r, g, b);
-  var h,
-    s,
-    l = (max + min) / 2;
-
-  if (max == min) {
-    h = s = 0; // achromatic
-  } else {
-    var d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-      case r:
-        h = (g - b) / d + (g < b ? 6 : 0);
-        break;
-      case g:
-        h = (b - r) / d + 2;
-        break;
-      case b:
-        h = (r - g) / d + 4;
-        break;
-    }
-    h /= 6;
-  }
-
-  s = s * 100;
-  var sat = Math.round(s);
-  l = l * 100;
-  var lum = Math.round(l);
-  var hue = Math.round(360 * h);
-  return { h: hue, s: sat, l: lum };
-}
-
-function dropper() {
-  const $find = document.querySelector(".find");
-  const $infobox = document.querySelector(".infobox");
-  const $info = document.querySelectorAll(".info");
-  const $season = document.querySelector(".season");
-  const $result = document.querySelector(".result");
-  const $dropdown = document.getElementById("picker");
-  const $hexInfo = document.querySelector(".hex");
-  const $scaInfo = document.querySelector(".sca-info");
-  const $softautumn = document.querySelector(".softautumn");
-  const $darkwinter = document.querySelector(".darkwinter");
-  const $brightspring = document.querySelector(".brightspring");
-  const $lightsummer = document.querySelector(".lightsummer");
-  const $truautumn = document.querySelector(".truautumn");
-  const $truwinter = document.querySelector(".truwinter");
-  const $truspring = document.querySelector(".truspring");
-  const $trusummer = document.querySelector(".trusummer");
-  const $darkautumn = document.querySelector(".darkautumn");
-  const $brightwinter = document.querySelector(".brightwinter");
-  const $lightspring = document.querySelector(".lightspring");
-  const $softsummer = document.querySelector(".softsummer");
-
-  async function updateCounter(newCount) {
-    $find.disabled = newCount === 0;
-    await chrome.storage.local.set({ counter: newCount });
-  }
-
-  async function openDropper() {
-    if (!isPaidUser) {
-      const { counter } = await chrome.storage.local.get("counter");
-      if (counter <= 0) {
-        console.log("Daily use limit reached.");
-        return;
-      }
-    }
-
-    const eyeDropper = new EyeDropper();
-    try {
-      const res = await eyeDropper.open();
-      if (res && res.sRGBHex) {
-        showResult(res.sRGBHex);
-        if (!isPaidUser) {
-          const { counter } = await chrome.storage.local.get("counter");
-          const newCount = counter - 1;
-          document.getElementById("count").innerHTML =
-            "Daily usage count remaining: " + newCount;
-          await updateCounter(newCount);
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", async () => {
-    if (!isPaidUser) {
-      const [counter, hoursLeft] = await loadState();
-      $find.disabled = counter <= 0;
-    }
-  });
-
-  chrome.storage.local.get(["dropdownValue"], function (result) {
-    if (result.dropdownValue) {
-      const $dropdown = document.getElementById("picker");
-      $dropdown.value = result.dropdownValue;
-      console.log("Dropdown value retrieved: " + result.dropdownValue);
-    }
-  });
-
-  async function showResult(hex = "#FFFFFF") {
-    var hsl = hextohsl(hex);
-    var fit = $dropdown.value ? $dropdown.value : undefined;
-    var output = await getSeasonFromHex(hex, fit);
-    $infobox.style.backgroundColor = hex;
-    $scaInfo.style.backgroundColor = hex;
-    $hexInfo.innerText = "Color:\n" + hex;
-
-    if (parseFloat(hsl.l) > 50) {
-      $hexInfo.style.color = "black";
-      $scaInfo.style.color = "black";
-      $info.forEach((element) => {
-        element.style.color = "black";
-      });
+    const status = await getTrialStatus();
+    if (status.analysis_credits > 0) {
+      accessLevel = "paid";
+    } else if (!status.has_used_trial) {
+      accessLevel = "trial";
     } else {
-      $hexInfo.style.color = "white";
-      $scaInfo.style.color = "white";
-      $info.forEach((element) => {
-        element.style.color = "white";
-      });
+      accessLevel = "free";
+      await loadFreeCounterFromServer();
     }
-
-    var top_season = output["colorSeason"];
-    $scaInfo.innerText = top_season;
-    var match = output["compatibility"]
-      ? output["compatibility"]
-      : "Select a season";
-    $season.innerText = "Your match:\n" + match;
-    $result.innerText = top_season;
-    $softautumn.innerText = output["seasons_dict"]["Soft Autumn"];
-    $darkwinter.innerText = output["seasons_dict"]["Dark Winter"];
-    $brightspring.innerText = output["seasons_dict"]["Bright Spring"];
-    $lightsummer.innerText = output["seasons_dict"]["Light Summer"];
-    $truautumn.innerText = output["seasons_dict"]["True Autumn"];
-    $truwinter.innerText = output["seasons_dict"]["True Winter"];
-    $truspring.innerText = output["seasons_dict"]["True Spring"];
-    $trusummer.innerText = output["seasons_dict"]["True Summer"];
-    $darkautumn.innerText = output["seasons_dict"]["Dark Autumn"];
-    $brightwinter.innerText = output["seasons_dict"]["Bright Winter"];
-    $lightspring.innerText = output["seasons_dict"]["Light Spring"];
-    $softsummer.innerText = output["seasons_dict"]["Soft Summer"];
+  } catch (err) {
+    console.error("Failed to check access level:", err);
+    accessLevel = "free";
+    await loadFreeCounterFromLocal();
   }
+}
 
-  $find.addEventListener("click", openDropper);
-  $dropdown.addEventListener("change", function () {
-    const selectedValue = $dropdown.value;
-    chrome.storage.local.set({ dropdownValue: selectedValue }, function () {
-      console.log("Dropdown value saved: " + selectedValue);
+// ─── Hybrid Weekly Counter ───────────────────────────────────────────────────
+
+async function loadFreeCounterFromServer() {
+  try {
+    const res = await apiRequest("/api/ext/weekly-status");
+    if (!res.ok) throw new Error("Server returned " + res.status);
+    const data = await res.json();
+    freeCounter = data.remaining;
+    await chrome.storage.local.set({
+      freeCounterCache: {
+        remaining: freeCounter,
+        resets_at: data.resets_at,
+        fetchedAt: Date.now(),
+      },
     });
-  });
-}
-
-async function init() {
-  if ("EyeDropper" in window) {
-    const now = Date.now();
-    const { counter, lastReset } = await chrome.storage.local.get([
-      "counter",
-      "lastReset",
-    ]);
-
-    if (typeof counter !== "number" || typeof lastReset !== "number") {
-      await chrome.storage.local.set({
-        counter: MAX_CLICKS,
-        lastReset: now,
-      });
-    }
-    dropper();
-  } else {
-    showNoSupport();
+  } catch (err) {
+    console.error("Could not load weekly status from server:", err);
+    await loadFreeCounterFromLocal();
   }
 }
-extpay
-  .getUser()
-  .then(async (user) => {
-    isPaidUser = user.paid;
-    let [counter, hoursLeft] = await loadState();
-    if (user.paid) {
-      init();
-    } else if (!user.trialStartedAt && !user.subscriptionStatus) {
-      // Have user create trial account
-      extpay.openTrialPage("14 day");
-      document.getElementById("bottom").textContent =
-        "A 2 week free trial page pop-up has automatically opened up. Simply sign up with your email there to unlock access or click Account above to create a permanent account with us";
+
+async function loadFreeCounterFromLocal() {
+  const { freeCounterCache } =
+    await chrome.storage.local.get("freeCounterCache");
+  if (freeCounterCache && freeCounterCache.resets_at) {
+    const resetsAt = new Date(freeCounterCache.resets_at).getTime();
+    if (Date.now() < resetsAt) {
+      freeCounter = freeCounterCache.remaining;
     } else {
-      if (
-        user.subscriptionStatus == "past_due" ||
-        user.subscriptionStatus == "canceled"
-      ) {
-        // Have user pay for extension
-        document.getElementById("count").hidden = false;
-        document.getElementById("reset-timer").hidden = false;
-        if (counter <= 0) {
-          document.getElementById("bottom").textContent =
-            "Daily limit reached. Please register for the extension in the Account section above to unlock infinite uses";
-          document.getElementById("reset-timer").textContent =
-            `Resets in: ${hoursLeft} hour${hoursLeft !== 1 ? "s" : ""}`;
-        } else {
-          init();
-        }
-      } else if (user.trialStartedAt) {
-        const now = new Date();
-        const twoweeks = 1000 * 60 * 60 * 24 * 14; // in milliseconds
-        if (user.trialStartedAt && now - user.trialStartedAt < twoweeks) {
-          init();
-        } else {
-          // Have user pay for extension
-          document.getElementById("count").hidden = false;
-          document.getElementById("reset-timer").hidden = false;
-          if (counter <= 0) {
-            document.getElementById("bottom").textContent =
-              "Daily limit reached. Please register for the extension in the Account section above to unlock infinite uses";
-            document.getElementById("reset-timer").textContent =
-              `Resets in: ${hoursLeft} hour${hoursLeft !== 1 ? "s" : ""}`;
-          } else {
-            init();
-          }
-        }
-      } else {
-        document.getElementById("bottom").textContent =
-          "Daily limit reached. Please register for the extension in the Account section above to unlock infinite uses";
-      }
+      freeCounter = MAX_FREE_WEEKLY;
     }
-  })
-  .catch((err) => {
-    document.querySelector("p").innerHTML =
-      "Error fetching data :( Check that your user id is correct and you're connected to the internet";
+  } else {
+    freeCounter = MAX_FREE_WEEKLY;
+  }
+}
+
+async function useFreeClick() {
+  if (freeCounter <= 0) return false;
+  freeCounter--;
+  await chrome.storage.local.set({
+    freeCounterCache: {
+      remaining: freeCounter,
+      resets_at: (await chrome.storage.local.get("freeCounterCache"))
+        ?.freeCounterCache?.resets_at,
+      fetchedAt: Date.now(),
+    },
   });
+  updateCounterDisplay();
+  if (freeCounter === 0) {
+    try {
+      await apiRequest("/api/ext/weekly-exhausted", { method: "POST" });
+    } catch (err) {
+      console.error("Failed to report weekly exhaustion:", err);
+    }
+  }
+  return true;
+}
+
+function updateCounterDisplay() {
+  if (!counterDisplay) return;
+  if (accessLevel === "paid" || accessLevel === "trial") {
+    counterDisplay.textContent = "Unlimited";
+  } else if (accessLevel === "free") {
+    counterDisplay.textContent = `${freeCounter} / ${MAX_FREE_WEEKLY} this week`;
+  } else {
+    counterDisplay.textContent = "Sign in to use";
+  }
+}
+
+function canAnalyze() {
+  if (accessLevel === "paid" || accessLevel === "trial") return true;
+  if (accessLevel === "free" && freeCounter > 0) return true;
+  return false;
+}
+
+// ─── Dropper ─────────────────────────────────────────────────────────────────
+
+async function initDropper() {
+  if (accessLevel === "none") {
+    showMessage("Please sign in to use color analysis.");
+    return;
+  }
+  if (!canAnalyze()) {
+    showMessage("No uses left this week. Upgrade for unlimited!");
+    return;
+  }
+
+  const userSeason = seasonSelect?.value;
+  if (!userSeason) {
+    showMessage("Select your color season first.");
+    return;
+  }
+
+  try {
+    const eyeDropper = new EyeDropper();
+    const result = await eyeDropper.open();
+    const hex = result.sRGBHex;
+
+    showLoading();
+
+    const data = await analyzeColor(hex, userSeason);
+
+    if (accessLevel === "free") {
+      await useFreeClick();
+    }
+
+    showResult(hex, data.result);
+
+    // Save for persistence across popup reopens
+    await chrome.storage.local.set({
+      lastResult: { hex, result: data.result },
+    });
+  } catch (err) {
+    if (err.message === "The user canceled the selection.") return;
+    if (err.message?.includes("sign in")) {
+      showMessage("Session expired. Please sign in again.");
+    } else {
+      showMessage("Could not analyze color. Try again.");
+    }
+    console.error("Dropper error:", err);
+  }
+}
+
+// ─── UI: Result Display ──────────────────────────────────────────────────────
+
+function showResult(hex, result) {
+  if (!resultBox) return;
+
+  const season = result.colorSeason || "Unknown";
+  const compatibility = result.compatibility || "";
+
+  // Determine text color based on luminance
+  const textColor = isLightColor(hex) ? "#000" : "#fff";
+  const subtleColor = isLightColor(hex)
+    ? "rgba(0,0,0,0.4)"
+    : "rgba(255,255,255,0.6)";
+
+  // Fill result box with picked color
+  resultBox.style.backgroundColor = hex;
+  resultBox.classList.remove("loading");
+  resultBox.classList.add("has-result");
+
+  resultHex.textContent = hex.toUpperCase();
+  resultHex.style.color = subtleColor;
+
+  resultRating.textContent = compatibility || season;
+  resultRating.style.color = textColor;
+
+  if (compatibility) {
+    resultSeason.textContent = `✦ ${season}`;
+    resultSeason.style.color = subtleColor;
+  } else {
+    resultSeason.textContent = "";
+  }
+
+  // Update wheel
+  updateWheel(season, hex);
+}
+
+function showLoading() {
+  if (!resultBox) return;
+  resultBox.classList.add("loading");
+  resultBox.classList.remove("has-result");
+  resultBox.style.backgroundColor = "";
+  resultRating.textContent = "";
+  resultSeason.textContent = "";
+  resultHex.textContent = "";
+}
+
+function showMessage(text) {
+  if (!resultBox) return;
+  resultBox.classList.remove("loading", "has-result");
+  resultBox.style.backgroundColor = "";
+  resultRating.style.display = "none";
+  resultSeason.textContent = "";
+  resultHex.textContent = "";
+  resultEmpty.textContent = text;
+  resultEmpty.style.display = "block";
+
+  // Reset after showing message so it acts as empty state
+  setTimeout(() => {
+    resultRating.style.display = "";
+    resultEmpty.textContent = "Pick a color to analyze";
+  }, 3000);
+}
+
+// ─── UI: Wheel Update ────────────────────────────────────────────────────────
+
+function updateWheel(season, hex) {
+  const seasonIdx = SEASONS_ORDER.indexOf(season);
+
+  SEASONS_ORDER.forEach((s, i) => {
+    const seg = document.getElementById(`seg-${i}`);
+    const lbl = document.getElementById(`lbl-${i}`);
+
+    if (i === seasonIdx) {
+      // Active segment: fill with picked color
+      seg.setAttribute("fill", hex);
+      seg.setAttribute("opacity", "1");
+      seg.setAttribute("stroke", "#2c1f2e");
+      seg.setAttribute("stroke-width", "1.5");
+
+      // Label color: black or white based on picked color
+      lbl.setAttribute("fill", isLightColor(hex) ? "#2c1f2e" : "#fff");
+      lbl.classList.remove("faded");
+      lbl.classList.add("active");
+    } else {
+      // Inactive: restore default color, fade
+      seg.setAttribute("fill", SEASON_COLORS[s]);
+      seg.setAttribute("opacity", "0.4");
+      seg.removeAttribute("stroke");
+      seg.removeAttribute("stroke-width");
+
+      lbl.setAttribute("fill", "#b8a8be");
+      lbl.classList.add("faded");
+      lbl.classList.remove("active");
+    }
+  });
+
+  // Center circle: fill with picked color
+  const center = document.getElementById("wheel-center");
+  const line1 = document.getElementById("center-line1");
+  const line2 = document.getElementById("center-line2");
+
+  center.setAttribute("fill", hex);
+  center.setAttribute(
+    "stroke",
+    isLightColor(hex) ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.8)",
+  );
+  center.setAttribute("stroke-width", isLightColor(hex) ? "1.5" : "2");
+
+  const centerTextColor = isLightColor(hex) ? "#2c1f2e" : "#fff";
+  line1.setAttribute("fill", centerTextColor);
+  line2.setAttribute("fill", centerTextColor);
+
+  // Split season name into two lines
+  const parts = season.split(" ");
+  line1.textContent = parts[0] || "";
+  line2.textContent = parts[1] || "";
+}
+
+// ─── Utility: Light/Dark Color Detection ─────────────────────────────────────
+
+function isLightColor(hex) {
+  const c = hex.replace("#", "");
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  // Perceived luminance formula
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.55;
+}

@@ -1,0 +1,46 @@
+/* ─────────────────────────────────────────────
+   Cleo Extension — Popup Size Constraint
+   Chrome popups size from html element, not body.
+───────────────────────────────────────────── */
+
+html {
+    width: 360px;
+    height: 420px;
+    overflow: hidden;
+  }
+  
+  body {
+    width: 360px;
+    height: 420px;
+    max-height: 420px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin: 0;
+  }
+  
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  
+  .container {
+    padding: 10px 18px 12px;
+  }
+  
+  body::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  body::-webkit-scrollbar-thumb {
+    background: rgba(242, 196, 206, 0.5);
+    border-radius: 4px;
+  }
+  
+  body::-webkit-scrollbar-thumb:hover {
+    background: rgba(242, 196, 206, 0.8);
+  }
