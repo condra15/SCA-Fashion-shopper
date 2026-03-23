@@ -75,12 +75,19 @@ async function signUp(email, password) {
 
   // If email confirmation is required, data.access_token may be null
   if (data.access_token) {
+    console.log(
+      "About to store session, token starts with:",
+      data.access_token.substring(0, 20),
+    );
     await storeSession({
       access_token: data.access_token,
       refresh_token: data.refresh_token,
       expires_at: Date.now() + data.expires_in * 1000,
       user: data.user,
     });
+    // Verify it actually saved
+    const check = await getStoredSession();
+    console.log("Session after store:", check ? "EXISTS" : "NULL");
   }
 
   return data;
