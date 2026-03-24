@@ -3,12 +3,7 @@
  * Supabase Auth + Hybrid Weekly Counter + New Compact UI
  */
 
-import {
-  isSignedIn,
-  getTrialStatus,
-  analyzeColor,
-  apiRequest,
-} from "./auth.js";
+import { isSignedIn, analyzeColor, apiRequest } from "./auth.js";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -117,14 +112,27 @@ async function checkAccessLevel() {
   }
 
   try {
-    const status = await getTrialStatus();
-    if (status.analysis_credits > 0) {
+    // Use account-status (extension-specific) instead of trial-status (iOS)
+    const res = await apiRequest("/api/ext/account-status");
+    if (!res.ok) throw new Error("Server returned " + res.status);
+    const status = await res.json();
+
+    const plan = status.subscription_plan || "free";
+
+    if (plan === "monthly" || plan === "yearly" || plan === "lifetime") {
       accessLevel = "paid";
-    } else if (!status.has_used_trial) {
-      accessLevel = "trial";
     } else {
       accessLevel = "free";
-      await loadFreeCounterFromServer();
+      // Use the server-provided remaining count directly
+      freeCounter = status.weekly_remaining ?? MAX_FREE_WEEKLY;
+      // Cache it locally
+      await chrome.storage.local.set({
+        freeCounterCache: {
+          remaining: freeCounter,
+          resets_at: status.resets_at,
+          fetchedAt: Date.now(),
+        },
+      });
     }
   } catch (err) {
     console.error("Failed to check access level:", err);
@@ -172,22 +180,24 @@ async function loadFreeCounterFromLocal() {
 async function useFreeClick() {
   if (freeCounter <= 0) return false;
   freeCounter--;
+
+  // Update local cache immediately
+  const cache = (await chrome.storage.local.get("freeCounterCache"))
+    ?.freeCounterCache;
   await chrome.storage.local.set({
     freeCounterCache: {
       remaining: freeCounter,
-      resets_at: (await chrome.storage.local.get("freeCounterCache"))
-        ?.freeCounterCache?.resets_at,
+      resets_at: cache?.resets_at,
       fetchedAt: Date.now(),
     },
   });
   updateCounterDisplay();
-  if (freeCounter === 0) {
-    try {
-      await apiRequest("/api/ext/weekly-exhausted", { method: "POST" });
-    } catch (err) {
-      console.error("Failed to report weekly exhaustion:", err);
-    }
-  }
+
+  // Update server in background — fire and forget, don't await
+  apiRequest("/api/ext/weekly-use", { method: "POST" }).catch((err) =>
+    console.error("Failed to record weekly use:", err),
+  );
+
   return true;
 }
 
