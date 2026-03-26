@@ -1,13 +1,13 @@
 /**
- * Cleo Chrome Extension — Main Script
- * Supabase Auth + Hybrid Weekly Counter + New Compact UI
+ * Kisari Chrome Extension — Main Script
+ * Supabase Auth + Hybrid Daily Counter + Compact UI
  */
 
 import { isSignedIn, analyzeColor, apiRequest } from "./auth.js";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const MAX_FREE_WEEKLY = 25;
+const MAX_FREE_DAILY = 6;
 
 // Season order must match SVG segment order (seg-0 through seg-11)
 const SEASONS_ORDER = [
@@ -112,7 +112,7 @@ async function checkAccessLevel() {
   }
 
   try {
-    // Use account-status (extension-specific) instead of trial-status (iOS)
+    // Use account-status (extension-specific) — returns subscription plan + daily counter
     const res = await apiRequest("/api/ext/account-status");
     if (!res.ok) throw new Error("Server returned " + res.status);
     const status = await res.json();
@@ -123,9 +123,9 @@ async function checkAccessLevel() {
       accessLevel = "paid";
     } else {
       accessLevel = "free";
-      // Use the server-provided remaining count directly
-      freeCounter = status.weekly_remaining ?? MAX_FREE_WEEKLY;
-      // Cache it locally
+      // Server already initialized/reset the counter if needed
+      freeCounter = status.daily_remaining ?? MAX_FREE_DAILY;
+      // Cache locally for offline/fast access
       await chrome.storage.local.set({
         freeCounterCache: {
           remaining: freeCounter,
@@ -141,26 +141,7 @@ async function checkAccessLevel() {
   }
 }
 
-// ─── Hybrid Weekly Counter ───────────────────────────────────────────────────
-
-async function loadFreeCounterFromServer() {
-  try {
-    const res = await apiRequest("/api/ext/weekly-status");
-    if (!res.ok) throw new Error("Server returned " + res.status);
-    const data = await res.json();
-    freeCounter = data.remaining;
-    await chrome.storage.local.set({
-      freeCounterCache: {
-        remaining: freeCounter,
-        resets_at: data.resets_at,
-        fetchedAt: Date.now(),
-      },
-    });
-  } catch (err) {
-    console.error("Could not load weekly status from server:", err);
-    await loadFreeCounterFromLocal();
-  }
-}
+// ─── Daily Counter ───────────────────────────────────────────────────────────
 
 async function loadFreeCounterFromLocal() {
   const { freeCounterCache } =
@@ -170,10 +151,11 @@ async function loadFreeCounterFromLocal() {
     if (Date.now() < resetsAt) {
       freeCounter = freeCounterCache.remaining;
     } else {
-      freeCounter = MAX_FREE_WEEKLY;
+      // Day expired — reset locally
+      freeCounter = MAX_FREE_DAILY;
     }
   } else {
-    freeCounter = MAX_FREE_WEEKLY;
+    freeCounter = MAX_FREE_DAILY;
   }
 }
 
@@ -193,9 +175,9 @@ async function useFreeClick() {
   });
   updateCounterDisplay();
 
-  // Update server in background — fire and forget, don't await
-  apiRequest("/api/ext/weekly-use", { method: "POST" }).catch((err) =>
-    console.error("Failed to record weekly use:", err),
+  // Update server in background — fire and forget, don't block the user
+  apiRequest("/api/ext/daily-use", { method: "POST" }).catch((err) =>
+    console.error("Failed to record daily use:", err),
   );
 
   return true;
@@ -203,17 +185,17 @@ async function useFreeClick() {
 
 function updateCounterDisplay() {
   if (!counterDisplay) return;
-  if (accessLevel === "paid" || accessLevel === "trial") {
+  if (accessLevel === "paid") {
     counterDisplay.textContent = "Unlimited";
   } else if (accessLevel === "free") {
-    counterDisplay.textContent = `${freeCounter} / ${MAX_FREE_WEEKLY} this week`;
+    counterDisplay.textContent = `${freeCounter} / ${MAX_FREE_DAILY} today`;
   } else {
     counterDisplay.textContent = "Sign in to use";
   }
 }
 
 function canAnalyze() {
-  if (accessLevel === "paid" || accessLevel === "trial") return true;
+  if (accessLevel === "paid") return true;
   if (accessLevel === "free" && freeCounter > 0) return true;
   return false;
 }
@@ -226,7 +208,7 @@ async function initDropper() {
     return;
   }
   if (!canAnalyze()) {
-    showMessage("No uses left this week. Upgrade for unlimited!");
+    showMessage("No uses left today. Upgrade for unlimited!");
     return;
   }
 

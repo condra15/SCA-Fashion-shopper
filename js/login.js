@@ -1,6 +1,6 @@
 /**
- * Cleo Chrome Extension — Login Page Logic
- * ==========================================
+ * Kisari Chrome Extension — Login Page Logic
+ * ============================================
  * Handles: sign in, sign up, sign out, subscription display,
  * manage subscription, and account deletion.
  */
@@ -167,10 +167,6 @@ $signOutBtn.addEventListener("click", async () => {
 // ─── Subscribe / Manage ──────────────────────────────────────────────────────
 
 $subscribeBtn.addEventListener("click", async () => {
-  // Determine which plan — for now default to monthly.
-  // The plan selection happens via the upgrade card buttons if we add them,
-  // or we can send the user to a Stripe Checkout with all options.
-  // For simplicity, open a plan picker or default to monthly.
   await openCheckout("monthly");
 });
 
@@ -252,7 +248,6 @@ $deleteConfirmBtn.addEventListener("click", async () => {
     });
 
     if (res.ok) {
-      // Clear local session and show auth view
       await signOut();
       showAuthView();
       showSuccess("Your account has been deleted.");
@@ -303,16 +298,16 @@ async function loadAccountInfo() {
         $manageSection.style.display = "none";
         break;
       default:
-        $accountPlan.textContent = "Free (25/week)";
+        $accountPlan.textContent = "Free (6/day)";
         $upgradeSection.style.display = "block";
         $manageSection.style.display = "none";
     }
 
     // Usage display
     if (plan === "free") {
-      const remaining = status.weekly_remaining ?? 25;
-      const max = status.weekly_max ?? 25;
-      $usageDisplay.textContent = `${remaining} of ${max} lookups this week`;
+      const remaining = status.daily_remaining ?? 6;
+      const max = status.daily_max ?? 6;
+      $usageDisplay.textContent = `${remaining} of ${max} lookups today`;
     } else {
       $usageDisplay.textContent = "Unlimited";
     }
