@@ -2,7 +2,7 @@
  * Kisari Chrome Extension — Login Page Logic
  * ============================================
  * Handles: sign in, sign up, sign out, subscription display,
- * manage subscription, and account deletion.
+ * manage subscription, reactivation, and account deletion.
  */
 
 import {
@@ -77,7 +77,7 @@ function showAccountView() {
   loadAccountInfo();
 }
 
-// ─── Sign In ─────────────────────────────────────────────────────────────────
+// ─── Sign In (with deleted account check) ────────────────────────────────────
 
 $signInBtn.addEventListener("click", async () => {
   const email = $emailInput.value.trim();
@@ -93,6 +93,25 @@ $signInBtn.addEventListener("click", async () => {
 
   try {
     await signIn(email, password);
+
+    // Check if this account was previously deleted (blocks password-reset loophole)
+    try {
+      const checkRes = await apiRequest("/api/ext/check-deleted");
+      if (checkRes.ok) {
+        const checkData = await checkRes.json();
+        if (checkData.deleted) {
+          await signOut();
+          showError(
+            "This account was deleted. Please use Create Account to re-register.",
+          );
+          return;
+        }
+      }
+    } catch (e) {
+      // If the check fails, allow sign-in — don't block on a network hiccup
+      console.warn("Could not verify deleted status:", e);
+    }
+
     showAccountView();
   } catch (err) {
     showError(err.message || "Sign in failed. Check your credentials.");
@@ -101,7 +120,7 @@ $signInBtn.addEventListener("click", async () => {
   }
 });
 
-// ─── Sign Up ─────────────────────────────────────────────────────────────────
+// ─── Sign Up (with reactivation support) ─────────────────────────────────────
 
 $signUpBtn.addEventListener("click", async () => {
   const email = $emailInput.value.trim();
@@ -230,6 +249,8 @@ async function openCheckout(plan) {
     if (res.ok) {
       const data = await res.json();
       if (data.url) {
+        // Flag that we're expecting a plan update (for checkout polling)
+        await chrome.storage.local.set({ pendingCheckout: Date.now() });
         window.open(data.url, "_blank");
         return;
       }

@@ -100,6 +100,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (lastResult) {
     showResult(lastResult.hex, lastResult.result);
   }
+
+  // If user just returned from checkout, poll for plan update
+  const { pendingCheckout } = await chrome.storage.local.get("pendingCheckout");
+  if (pendingCheckout && accessLevel === "free") {
+    // Expire the flag after 5 minutes to avoid stale polling
+    if (Date.now() - pendingCheckout > 5 * 60 * 1000) {
+      await chrome.storage.local.remove("pendingCheckout");
+    } else {
+      pollForPlanUpdate().then((upgraded) => {
+        if (upgraded) {
+          chrome.storage.local.remove("pendingCheckout");
+        }
+      });
+    }
+  }
 });
 
 // ─── Access Level ────────────────────────────────────────────────────────────
@@ -139,6 +154,26 @@ async function checkAccessLevel() {
     accessLevel = "free";
     await loadFreeCounterFromLocal();
   }
+}
+
+async function pollForPlanUpdate(maxAttempts = 5) {
+  for (let i = 0; i < maxAttempts; i++) {
+    await new Promise((r) => setTimeout(r, 2000));
+    try {
+      const res = await apiRequest("/api/ext/account-status");
+      if (!res.ok) continue;
+      const status = await res.json();
+      const plan = status.subscription_plan || "free";
+      if (plan !== "free") {
+        accessLevel = "paid";
+        updateCounterDisplay();
+        return true;
+      }
+    } catch (e) {
+      // ignore and retry
+    }
+  }
+  return false;
 }
 
 // ─── Daily Counter ───────────────────────────────────────────────────────────
