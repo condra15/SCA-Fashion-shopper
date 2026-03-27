@@ -22,9 +22,9 @@
   <div class="container">
     <h1 class="heading">Color Season <em>Finder</em></h1>
 
-    <div class="btn-box">
-      <select id="seasonSelect" class="pick">
-        <option value="" disabled selected>Select your season</option>
+    <div class="controls-row">
+      <select id="seasonSelect" class="pick compact-pick">
+        <option value="" disabled selected>Select season</option>
         <option value="Bright Spring">Bright Spring</option>
         <option value="True Spring">True Spring</option>
         <option value="Light Spring">Light Spring</option>
@@ -38,57 +38,63 @@
         <option value="True Winter">True Winter</option>
         <option value="Bright Winter">Bright Winter</option>
       </select>
-
-      <button id="dropperBtn" class="find">Find Color Season</button>
+      <button id="dropperBtn" class="find compact-find">FIND COLOR SEASON</button>
+      <span id="counter" class="counter-label">6/6 uses</span>
     </div>
 
-    <!-- Result display — fills with picked color -->
     <div id="result-box" class="result-box">
-      <div id="result-hex" class="result-hex"></div>
-      <div id="result-rating" class="result-rating"></div>
-      <div id="result-season" class="result-season"></div>
+      <div class="result-content">
+        <div class="result-text">
+          <div id="result-rating" class="result-rating"></div>
+          <div id="result-season" class="result-season"></div>
+        </div>
+        <div id="result-hex" class="result-hex"></div>
+      </div>
       <div id="result-empty" class="result-empty">Pick a color to analyze</div>
     </div>
 
-    <!-- Usage counter -->
-    <div id="count"><span id="counter"></span></div>
-
-    <!-- Compact SVG season wheel -->
     <div class="wheel-wrap">
-      <svg id="season-wheel" viewBox="0 0 160 160" width="160" height="160">
+      <svg id="season-wheel" viewBox="-20 -20 200 200" width="240" height="240">
         <g transform="translate(80,80)">
-          <!-- 12 season segments — order: BS, TS, LS, LSu, TSu, SS, SA, TA, DA, DW, TW, BW -->
-          <path id="seg-0" d="M0,-72 A72,72 0 0,1 36,-62.35 L0,0Z" fill="#FF6F61" opacity="0.7" data-season="Bright Spring"/>
-          <path id="seg-1" d="M36,-62.35 A72,72 0 0,1 62.35,-36 L0,0Z" fill="#FFB830" opacity="0.7" data-season="True Spring"/>
-          <path id="seg-2" d="M62.35,-36 A72,72 0 0,1 72,0 L0,0Z" fill="#FFDAB3" opacity="0.7" data-season="Light Spring"/>
-          <path id="seg-3" d="M72,0 A72,72 0 0,1 62.35,36 L0,0Z" fill="#A8C8E8" opacity="0.7" data-season="Light Summer"/>
-          <path id="seg-4" d="M62.35,36 A72,72 0 0,1 36,62.35 L0,0Z" fill="#C4A0B0" opacity="0.7" data-season="True Summer"/>
-          <path id="seg-5" d="M36,62.35 A72,72 0 0,1 0,72 L0,0Z" fill="#B0A8C0" opacity="0.7" data-season="Soft Summer"/>
-          <path id="seg-6" d="M0,72 A72,72 0 0,1 -36,62.35 L0,0Z" fill="#C4B08C" opacity="0.7" data-season="Soft Autumn"/>
-          <path id="seg-7" d="M-36,62.35 A72,72 0 0,1 -62.35,36 L0,0Z" fill="#C07040" opacity="0.7" data-season="True Autumn"/>
-          <path id="seg-8" d="M-62.35,36 A72,72 0 0,1 -72,0 L0,0Z" fill="#7A6030" opacity="0.7" data-season="Dark Autumn"/>
-          <path id="seg-9" d="M-72,0 A72,72 0 0,1 -62.35,-36 L0,0Z" fill="#3C3060" opacity="0.7" data-season="Dark Winter"/>
-          <path id="seg-10" d="M-62.35,-36 A72,72 0 0,1 -36,-62.35 L0,0Z" fill="#4060A8" opacity="0.7" data-season="True Winter"/>
-          <path id="seg-11" d="M-36,-62.35 A72,72 0 0,1 0,-72 L0,0Z" fill="#D03070" opacity="0.7" data-season="Bright Winter"/>
+          <path id="seg-0" d="M0,-78 A78,78 0 0,1 39,-67.55 L0,0Z" fill="#FF6F61" opacity="0.65"/>
+          <path id="seg-1" d="M39,-67.55 A78,78 0 0,1 67.55,-39 L0,0Z" fill="#FFB830" opacity="0.65"/>
+          <path id="seg-2" d="M67.55,-39 A78,78 0 0,1 78,0 L0,0Z" fill="#FFDAB3" opacity="0.65"/>
+          <path id="seg-3" d="M78,0 A78,78 0 0,1 67.55,39 L0,0Z" fill="#A8C8E8" opacity="0.65"/>
+          <path id="seg-4" d="M67.55,39 A78,78 0 0,1 39,67.55 L0,0Z" fill="#C4A0B0" opacity="0.65"/>
+          <path id="seg-5" d="M39,67.55 A78,78 0 0,1 0,78 L0,0Z" fill="#B0A8C0" opacity="0.65"/>
+          <path id="seg-6" d="M0,78 A78,78 0 0,1 -39,67.55 L0,0Z" fill="#C4B08C" opacity="0.65"/>
+          <path id="seg-7" d="M-39,67.55 A78,78 0 0,1 -67.55,39 L0,0Z" fill="#C07040" opacity="0.65"/>
+          <path id="seg-8" d="M-67.55,39 A78,78 0 0,1 -78,0 L0,0Z" fill="#7A6030" opacity="0.65"/>
+          <path id="seg-9" d="M-78,0 A78,78 0 0,1 -67.55,-39 L0,0Z" fill="#3C3060" opacity="0.65"/>
+          <path id="seg-10" d="M-67.55,-39 A78,78 0 0,1 -39,-67.55 L0,0Z" fill="#4060A8" opacity="0.65"/>
+          <path id="seg-11" d="M-39,-67.55 A78,78 0 0,1 0,-78 L0,0Z" fill="#D03070" opacity="0.65"/>
 
-          <!-- Initials -->
-          <text class="seg-label" id="lbl-0" x="12" y="-50" data-season="Bright Spring">BS</text>
-          <text class="seg-label" id="lbl-1" x="40" y="-32" data-season="True Spring">TS</text>
-          <text class="seg-label" id="lbl-2" x="50" y="-8" data-season="Light Spring">LS</text>
-          <text class="seg-label" id="lbl-3" x="50" y="18" data-season="Light Summer">LSu</text>
-          <text class="seg-label" id="lbl-4" x="36" y="40" data-season="True Summer">TSu</text>
-          <text class="seg-label" id="lbl-5" x="10" y="52" data-season="Soft Summer">SS</text>
-          <text class="seg-label" id="lbl-6" x="-14" y="52" data-season="Soft Autumn">SA</text>
-          <text class="seg-label" id="lbl-7" x="-38" y="38" data-season="True Autumn">TA</text>
-          <text class="seg-label" id="lbl-8" x="-52" y="14" data-season="Dark Autumn">DA</text>
-          <text class="seg-label" id="lbl-9" x="-52" y="-12" data-season="Dark Winter">DW</text>
-          <text class="seg-label" id="lbl-10" x="-38" y="-36" data-season="True Winter">TW</text>
-          <text class="seg-label" id="lbl-11" x="-12" y="-50" data-season="Bright Winter">BW</text>
+          <line x1="0" y1="-78" x2="0" y2="-32" stroke="rgba(44,31,46,0.2)" stroke-width="1"/>
+          <line x1="78" y1="0" x2="32" y2="0" stroke="rgba(44,31,46,0.2)" stroke-width="1"/>
+          <line x1="0" y1="78" x2="0" y2="32" stroke="rgba(44,31,46,0.2)" stroke-width="1"/>
+          <line x1="-78" y1="0" x2="-32" y2="0" stroke="rgba(44,31,46,0.2)" stroke-width="1"/>
 
-          <!-- Center circle -->
-          <circle id="wheel-center" cx="0" cy="0" r="28" fill="#fdf8f5" stroke="rgba(242,196,206,0.6)" stroke-width="1.5"/>
-          <text id="center-line1" x="0" y="-3" class="center-text">Your</text>
-          <text id="center-line2" x="0" y="8" class="center-text">Season</text>
+          <text class="season-group-label" x="50" y="-82">Spring</text>
+          <text class="season-group-label" x="50" y="88">Summer</text>
+          <text class="season-group-label" x="-50" y="88">Autumn</text>
+          <text class="season-group-label" x="-50" y="-82">Winter</text>
+
+          <text class="seg-label" id="lbl-0" x="14" y="-52">BS</text>
+          <text class="seg-label" id="lbl-1" x="42" y="-34">TS</text>
+          <text class="seg-label" id="lbl-2" x="52" y="-8">LS</text>
+          <text class="seg-label" id="lbl-3" x="52" y="18">LSu</text>
+          <text class="seg-label" id="lbl-4" x="38" y="42">TSu</text>
+          <text class="seg-label" id="lbl-5" x="12" y="54">SS</text>
+          <text class="seg-label" id="lbl-6" x="-16" y="54">SA</text>
+          <text class="seg-label" id="lbl-7" x="-40" y="40">TA</text>
+          <text class="seg-label" id="lbl-8" x="-54" y="14">DA</text>
+          <text class="seg-label" id="lbl-9" x="-54" y="-12">DW</text>
+          <text class="seg-label" id="lbl-10" x="-40" y="-38">TW</text>
+          <text class="seg-label" id="lbl-11" x="-14" y="-52">BW</text>
+
+          <circle id="wheel-center" cx="0" cy="0" r="30" fill="#fdf8f5" stroke="rgba(242,196,206,0.6)" stroke-width="1"/>
+          <text id="center-line1" x="0" y="-4" class="center-text">Your</text>
+          <text id="center-line2" x="0" y="9" class="center-text">Season</text>
         </g>
       </svg>
     </div>

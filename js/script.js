@@ -188,9 +188,9 @@ function updateCounterDisplay() {
   if (accessLevel === "paid") {
     counterDisplay.textContent = "Unlimited";
   } else if (accessLevel === "free") {
-    counterDisplay.textContent = `${freeCounter} / ${MAX_FREE_DAILY} today`;
+    counterDisplay.textContent = `${freeCounter}/${MAX_FREE_DAILY} uses`;
   } else {
-    counterDisplay.textContent = "Sign in to use";
+    counterDisplay.textContent = "Sign in";
   }
 }
 
@@ -267,9 +267,6 @@ function showResult(hex, result) {
   resultBox.classList.remove("loading");
   resultBox.classList.add("has-result");
 
-  resultHex.textContent = hex.toUpperCase();
-  resultHex.style.color = subtleColor;
-
   resultRating.textContent = compatibility || season;
   resultRating.style.color = textColor;
 
@@ -280,8 +277,11 @@ function showResult(hex, result) {
     resultSeason.textContent = "";
   }
 
+  resultHex.textContent = hex.toUpperCase();
+  resultHex.style.color = subtleColor;
+
   // Update wheel
-  updateWheel(season, hex);
+  updateWheel(season, hex, compatibility);
 }
 
 function showLoading() {
@@ -298,7 +298,6 @@ function showMessage(text) {
   if (!resultBox) return;
   resultBox.classList.remove("loading", "has-result");
   resultBox.style.backgroundColor = "";
-  resultRating.style.display = "none";
   resultSeason.textContent = "";
   resultHex.textContent = "";
   resultEmpty.textContent = text;
@@ -306,14 +305,13 @@ function showMessage(text) {
 
   // Reset after showing message so it acts as empty state
   setTimeout(() => {
-    resultRating.style.display = "";
     resultEmpty.textContent = "Pick a color to analyze";
   }, 3000);
 }
 
 // ─── UI: Wheel Update ────────────────────────────────────────────────────────
 
-function updateWheel(season, hex) {
+function updateWheel(season, hex, compatibility) {
   const seasonIdx = SEASONS_ORDER.indexOf(season);
 
   SEASONS_ORDER.forEach((s, i) => {
@@ -334,7 +332,7 @@ function updateWheel(season, hex) {
     } else {
       // Inactive: restore default color, fade
       seg.setAttribute("fill", SEASON_COLORS[s]);
-      seg.setAttribute("opacity", "0.4");
+      seg.setAttribute("opacity", "0.35");
       seg.removeAttribute("stroke");
       seg.removeAttribute("stroke-width");
 
@@ -357,13 +355,19 @@ function updateWheel(season, hex) {
   center.setAttribute("stroke-width", isLightColor(hex) ? "1.5" : "2");
 
   const centerTextColor = isLightColor(hex) ? "#2c1f2e" : "#fff";
-  line1.setAttribute("fill", centerTextColor);
-  line2.setAttribute("fill", centerTextColor);
+  const centerSubtleColor = isLightColor(hex)
+    ? "rgba(44,31,46,0.6)"
+    : "rgba(255,255,255,0.7)";
 
-  // Split season name into two lines
-  const parts = season.split(" ");
-  line1.textContent = parts[0] || "";
-  line2.textContent = parts[1] || "";
+  // Line 1: season name (bold)
+  line1.setAttribute("fill", centerTextColor);
+  line1.setAttribute("font-weight", "500");
+  line1.textContent = season;
+
+  // Line 2: match rating (regular)
+  line2.setAttribute("fill", centerSubtleColor);
+  line2.setAttribute("font-weight", "400");
+  line2.textContent = compatibility || "";
 }
 
 // ─── Utility: Light/Dark Color Detection ─────────────────────────────────────
