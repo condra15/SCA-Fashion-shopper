@@ -13,6 +13,7 @@ import {
   isSignedIn,
   apiRequest,
   resetPassword,
+  API_BASE,
 } from "./auth.js";
 
 // ─── DOM Elements ────────────────────────────────────────────────────────────
@@ -120,6 +121,24 @@ $signUpBtn.addEventListener("click", async () => {
   clearMessages();
 
   try {
+    // Try reactivation first (for previously deleted accounts)
+    const reactivateRes = await fetch(
+      `${API_BASE}/api/ext/reactivate-account`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      },
+    );
+
+    if (reactivateRes.ok) {
+      // Account reactivated — now sign them in with the new password
+      await signIn(email, password);
+      showAccountView();
+      return;
+    }
+
+    // Not a deleted account — do normal sign up
     const data = await signUp(email, password);
 
     if (!data.access_token) {

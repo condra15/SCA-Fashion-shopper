@@ -102,6 +102,8 @@ async function signIn(email, password) {
   const data = await res.json();
 
   if (!res.ok) {
+    // Could be a deleted account trying to sign in with old password
+    // The password was randomized on delete, so they'll get "Invalid login credentials"
     throw new Error(data.error_description || data.msg || "Sign in failed");
   }
 
@@ -315,4 +317,5 @@ export {
   getTrialStatus,
   analyzeColor,
   resetPassword,
+  API_BASE,
 };
