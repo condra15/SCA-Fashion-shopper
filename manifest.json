@@ -1,6 +1,6 @@
 {
-    "name": "Color Season Match: Style & Shopping Assistant",
-    "version": "2.0.2",
+    "name": "Color Season Matcher: Style & Shopping Assistant",
+    "version": "2.0.3",
     "description": "Eyedrop any color on screen to instantly get its hex code and color season to compare to yours. Shop smarter, style with confidence.",
     "permissions": [
         "storage",
