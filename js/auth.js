@@ -212,13 +212,18 @@ async function analyzeColor(hex, userSeason) {
 // ─── Password Reset ──────────────────────────────────────────────────────────
 
 async function resetPassword(email) {
+  // redirect_to: where Supabase sends the user after they click the email link.
+  // Must be in the Supabase Dashboard's Redirect URLs allow list.
   const res = await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       apikey: SUPABASE_ANON_KEY,
     },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({
+      email,
+      redirect_to: "https://essumancreations.com/reset-password",
+    }),
   });
 
   if (!res.ok) {

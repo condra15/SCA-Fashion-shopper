@@ -7,7 +7,7 @@ import { isSignedIn, analyzeColor, apiRequest } from "./auth.js";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const MAX_FREE_DAILY = 6;
+const MAX_FREE_DAILY = 5;
 
 // Season order must match SVG segment order (seg-0 through seg-11)
 const SEASONS_ORDER = [
@@ -65,6 +65,7 @@ const resultRating = document.getElementById("result-rating");
 const resultSeason = document.getElementById("result-season");
 const resultEmpty = document.getElementById("result-empty");
 const counterDisplay = document.getElementById("counter");
+const upgradeBtn = document.getElementById("upgradeBtn");
 
 // ─── Init ────────────────────────────────────────────────────────────────────
 
@@ -93,6 +94,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (dropperBtn) {
     dropperBtn.addEventListener("click", initDropper);
+  }
+
+  if (upgradeBtn) {
+    upgradeBtn.addEventListener("click", () => {
+      window.location.href = "pages/login.html";
+    });
   }
 
   // Restore last result if available
@@ -227,6 +234,10 @@ function updateCounterDisplay() {
   } else {
     counterDisplay.textContent = "Sign in";
   }
+  // Show the upgrade button only for free users
+  if (upgradeBtn) {
+    upgradeBtn.style.display = accessLevel === "free" ? "block" : "none";
+  }
 }
 
 function canAnalyze() {
@@ -243,7 +254,8 @@ async function initDropper() {
     return;
   }
   if (!canAnalyze()) {
-    showMessage("No uses left today. Upgrade for unlimited!");
+    // Out of free uses — send them to the Account page to upgrade.
+    window.location.href = "pages/login.html";
     return;
   }
 

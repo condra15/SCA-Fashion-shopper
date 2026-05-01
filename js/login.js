@@ -28,6 +28,7 @@ const $signUpBtn = document.getElementById("sign-up-btn");
 const $forgotBtn = document.getElementById("forgot-password-btn");
 const $authError = document.getElementById("auth-error");
 const $authSuccess = document.getElementById("auth-success");
+const $accountError = document.getElementById("account-error");
 
 // Account info
 const $userEmail = document.getElementById("user-email");
@@ -38,7 +39,6 @@ const $signOutBtn = document.getElementById("sign-out-btn");
 // Subscription
 const $upgradeSection = document.getElementById("upgrade-section");
 const $manageSection = document.getElementById("manage-section");
-const $subscribeBtn = document.getElementById("subscribe-btn");
 const $manageSubBtn = document.getElementById("manage-sub-btn");
 
 // Delete account
@@ -204,11 +204,7 @@ $signOutBtn.addEventListener("click", async () => {
 
 // ─── Subscribe / Manage ──────────────────────────────────────────────────────
 
-$subscribeBtn.addEventListener("click", async () => {
-  await openCheckout("monthly");
-});
-
-// Add click handlers for individual plan buttons if they exist
+// Per-tier upgrade buttons — each plan card has its own [data-plan] button
 document.querySelectorAll("[data-plan]").forEach((btn) => {
   btn.addEventListener("click", async () => {
     const plan = btn.getAttribute("data-plan");
@@ -229,7 +225,14 @@ $manageSubBtn.addEventListener("click", async () => {
       }
     }
     const err = await res.json().catch(() => ({}));
-    showError(err.error || "Could not open subscription management.");
+    // Special handling for inconsistent state — show the support email more prominently
+    if (err.code === "INCONSISTENT_STATE") {
+      showError(
+        "We can't manage your subscription from here. Please email contact@essumancreations.com and we'll fix it.",
+      );
+    } else {
+      showError(err.error || "Could not open subscription management.");
+    }
   } catch (err) {
     console.error("Could not open portal:", err);
     showError("Could not reach server. Try again later.");
@@ -237,8 +240,13 @@ $manageSubBtn.addEventListener("click", async () => {
 });
 
 async function openCheckout(plan) {
-  $subscribeBtn.disabled = true;
-  $subscribeBtn.textContent = "Opening...";
+  // Disable all per-tier upgrade buttons while we open checkout
+  const tierButtons = document.querySelectorAll("[data-plan]");
+  tierButtons.forEach((btn) => {
+    btn.disabled = true;
+    btn.dataset.originalText = btn.textContent;
+    btn.textContent = "Opening...";
+  });
 
   try {
     const res = await apiRequest("/api/ext/create-checkout", {
@@ -262,8 +270,12 @@ async function openCheckout(plan) {
     console.error("Checkout error:", err);
     showError("Could not reach payment server. Try again later.");
   } finally {
-    $subscribeBtn.disabled = false;
-    $subscribeBtn.textContent = "Upgrade Now";
+    tierButtons.forEach((btn) => {
+      btn.disabled = false;
+      if (btn.dataset.originalText) {
+        btn.textContent = btn.dataset.originalText;
+      }
+    });
   }
 }
 
@@ -338,15 +350,15 @@ async function loadAccountInfo() {
         $manageSection.style.display = "none";
         break;
       default:
-        $accountPlan.textContent = "Free (6/day)";
+        $accountPlan.textContent = "Free (5/day)";
         $upgradeSection.style.display = "block";
         $manageSection.style.display = "none";
     }
 
     // Usage display
     if (plan === "free") {
-      const remaining = status.daily_remaining ?? 6;
-      const max = status.daily_max ?? 6;
+      const remaining = status.daily_remaining ?? 5;
+      const max = status.daily_max ?? 5;
       $usageDisplay.textContent = `${remaining} of ${max} lookups today`;
     } else {
       $usageDisplay.textContent = "Unlimited";
@@ -361,9 +373,20 @@ async function loadAccountInfo() {
 
 // ─── UI Helpers ──────────────────────────────────────────────────────────────
 
+// Pick the error element that belongs to the currently-visible section.
+// Auth section uses #auth-error; account section uses #account-error.
+function activeErrorElement() {
+  if ($accountSection.style.display !== "none") {
+    return $accountError;
+  }
+  return $authError;
+}
+
 function showError(msg) {
-  $authError.textContent = msg;
-  $authError.style.display = "block";
+  const $err = activeErrorElement();
+  $err.textContent = msg;
+  $err.style.display = "block";
+  // Always hide auth-success (only the auth view uses it).
   $authSuccess.style.display = "none";
 }
 
@@ -371,13 +394,17 @@ function showSuccess(msg) {
   const $successText = document.getElementById("auth-success-text");
   if ($successText) $successText.textContent = msg;
   $authSuccess.style.display = "flex";
+  // Hide whichever error element might be showing.
   $authError.style.display = "none";
+  $accountError.style.display = "none";
 }
 
 function clearMessages() {
   $authError.style.display = "none";
   $authSuccess.style.display = "none";
+  $accountError.style.display = "none";
   $authError.textContent = "";
+  $accountError.textContent = "";
 }
 
 function setLoading(loading) {

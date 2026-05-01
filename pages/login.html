@@ -51,7 +51,7 @@
 
       <div class="tip-card" style="margin-top: 10px; padding: 8px 10px;">
         <span class="tip-label">New?</span>
-        <p style="font-size: 11px;">Create an account to get started with 6 free color lookups per day.</p>
+        <p style="font-size: 11px;">Create an account to get started with 5 free color lookups per day.</p>
       </div>
     </div>
 
@@ -59,28 +59,19 @@
     <div id="account-section" style="display: none;">
       <h1 class="heading" style="font-size: 20px; margin-bottom: 6px;">Your Account</h1>
 
-      <!-- Account info card -->
-      <div class="method-card" style="margin-top: 8px; padding: 10px 14px;">
-        <div class="step" style="padding: 8px 0; gap: 10px;">
-          <div class="step-num" style="font-size: 9px; width: 22px; height: 22px;">@</div>
-          <div class="step-body">
-            <strong style="font-size: 12px;">Email</strong>
-            <p id="user-email" style="font-size: 11px;">—</p>
-          </div>
+      <!-- Error message for account actions (manage subscription, delete, etc.) -->
+      <div id="account-error" class="error" style="display: none; font-size: 11px; padding: 6px; margin-top: 6px;"></div>
+
+      <!-- Side-by-side header: Email + Plan/Usage -->
+      <div class="account-header-grid">
+        <div class="account-header-cell">
+          <strong class="account-header-label">Email</strong>
+          <p id="user-email" class="account-header-value">—</p>
         </div>
-        <div class="step" style="padding: 8px 0; gap: 10px;">
-          <div class="step-num" style="font-size: 9px; width: 22px; height: 22px;">✦</div>
-          <div class="step-body">
-            <strong style="font-size: 12px;">Plan</strong>
-            <p id="account-plan" style="font-size: 11px;">—</p>
-          </div>
-        </div>
-        <div class="step" style="padding: 8px 0; gap: 10px; border-bottom: none;">
-          <div class="step-num" style="font-size: 9px; width: 22px; height: 22px;">◎</div>
-          <div class="step-body">
-            <strong style="font-size: 12px;">Usage Today</strong>
-            <p id="usage-display" style="font-size: 11px;">—</p>
-          </div>
+        <div class="account-header-cell">
+          <strong class="account-header-label">Plan</strong>
+          <p id="account-plan" class="account-header-value">—</p>
+          <p id="usage-display" class="account-header-sub">—</p>
         </div>
       </div>
 
@@ -88,36 +79,30 @@
       <div id="upgrade-section" style="display: none;">
         <h3 style="margin-top: 10px; font-size: 14px; margin-bottom: 6px;">Upgrade for Unlimited</h3>
 
-        <div class="method-card" style="padding: 0 14px;">
-          <div class="step" style="padding: 8px 0; cursor: pointer;" data-plan="monthly">
-            <div class="step-body" style="width: 100%;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <strong style="font-size: 12px;">Monthly</strong>
-                <span class="tag tag-half" style="font-size: 9px;">$0.99/mo</span>
-              </div>
+        <div class="tier-list">
+          <div class="tier-card">
+            <div class="tier-info">
+              <strong>Monthly</strong>
+              <span class="tier-price">$0.99/mo</span>
             </div>
+            <button class="tier-btn" data-plan="monthly">Upgrade</button>
           </div>
-          <div class="step" style="padding: 8px 0; cursor: pointer;" data-plan="yearly">
-            <div class="step-body" style="width: 100%;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <strong style="font-size: 12px;">Yearly</strong>
-                <span class="tag tag-pure" style="font-size: 9px;">$9.99/yr</span>
-              </div>
-              <p style="font-size: 10px; color: var(--ink-faint); margin-top: 1px;">Save 17%</p>
+          <div class="tier-card">
+            <div class="tier-info">
+              <strong>Yearly</strong>
+              <span class="tier-price">$9.99/yr · save 17%</span>
             </div>
+            <button class="tier-btn" data-plan="yearly">Upgrade</button>
           </div>
-          <div class="step" style="padding: 8px 0; border-bottom: none; cursor: pointer;" data-plan="lifetime">
-            <div class="step-body" style="width: 100%;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <strong style="font-size: 12px;">Lifetime</strong>
-                <span class="tag tag-near" style="font-size: 9px;">$29.99</span>
-              </div>
-              <p style="font-size: 10px; color: var(--ink-faint); margin-top: 1px;">One-time, forever</p>
+          <div class="tier-card tier-card-best">
+            <span class="tier-badge">Best value</span>
+            <div class="tier-info">
+              <strong>Lifetime</strong>
+              <span class="tier-price">$29.99 · forever</span>
             </div>
+            <button class="tier-btn" data-plan="lifetime">Upgrade</button>
           </div>
         </div>
-
-        <button id="subscribe-btn" class="find" style="padding: 9px; font-size: 11px; margin-top: 8px;">Upgrade Now</button>
       </div>
 
       <!-- Manage subscription (shown for paid users) -->
