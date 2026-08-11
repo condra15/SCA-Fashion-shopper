@@ -41,6 +41,24 @@ const $upgradeSection = document.getElementById("upgrade-section");
 const $manageSection = document.getElementById("manage-section");
 const $manageSubBtn = document.getElementById("manage-sub-btn");
 
+// Consent
+const $consentSection = document.getElementById("consent-section");
+const $consentMarketingCheckbox = document.getElementById(
+  "consent-marketing-checkbox",
+);
+const $consentAcceptBtn = document.getElementById("consent-accept-btn");
+const $consentSignOutBtn = document.getElementById("consent-signout-btn");
+const $consentError = document.getElementById("consent-error");
+const $signupConsentCheckbox = document.getElementById(
+  "signup-consent-checkbox",
+);
+const $accountConsentCheckbox = document.getElementById(
+  "account-consent-checkbox",
+);
+const $accountConsentStatus = document.getElementById(
+  "account-consent-status",
+);
+
 // Delete account
 const $deleteBtn = document.getElementById("delete-account-btn");
 const $deleteConfirm = document.getElementById("delete-confirm");
@@ -55,12 +73,155 @@ window.addEventListener("DOMContentLoaded", async () => {
 
 async function renderPage() {
   const signedIn = await isSignedIn();
-  if (signedIn) {
-    showAccountView();
-  } else {
+  if (!signedIn) {
     showAuthView();
+    return;
+  }
+
+  // A signup choice made before email confirmation is written on first
+  // successful sign-in — see PENDING_CONSENT_KEY below.
+  await flushPendingSignupConsent();
+
+  if (await needsConsent()) {
+    showConsentView();
+    return;
+  }
+
+  showAccountView();
+}
+
+// ─── Consent ─────────────────────────────────────────────────────────────────
+// Accounts predating the consent model have no recorded decision and are
+// transactional-only until they make one (SCA-Fashion-Shopper CLAUDE.md
+// landmine 7). The gate blocks on accepting the updated Terms and Privacy
+// Policy; the marketing checkbox inside it is optional and never blocks,
+// because consent conditioned on access is not freely given.
+
+const PENDING_CONSENT_KEY = "pendingSignupConsent";
+
+/**
+ * True when this account has no recorded consent decision at all.
+ * A recorded decline (granted: false) counts as a decision — we do not
+ * re-prompt someone who has already said no.
+ */
+async function needsConsent() {
+  try {
+    const res = await apiRequest("/api/me/consent");
+    if (!res.ok) return false; // never lock someone out over a failed check
+    const data = await res.json();
+    return !data.marketing_consent_at;
+  } catch (err) {
+    console.warn("Consent check failed, continuing:", err);
+    return false;
   }
 }
+
+async function recordConsent(granted, source) {
+  const res = await apiRequest("/api/me/consent", {
+    method: "PUT",
+    body: JSON.stringify({ granted, source }),
+  });
+  if (!res.ok) throw new Error("Could not record your choice. Try again.");
+  return res.json();
+}
+
+/**
+ * Signup can complete before the address is confirmed, in which case there
+ * is no session yet to write consent against. Stash the choice locally and
+ * write it on the first successful sign-in.
+ */
+async function flushPendingSignupConsent() {
+  const { [PENDING_CONSENT_KEY]: pending } =
+    await chrome.storage.local.get(PENDING_CONSENT_KEY);
+  if (pending === undefined) return;
+
+  try {
+    await recordConsent(!!pending, "extension:signup_checkbox");
+    await chrome.storage.local.remove(PENDING_CONSENT_KEY);
+  } catch (err) {
+    // Leave it stashed and retry next load rather than losing the choice
+    console.warn("Could not flush pending signup consent:", err);
+  }
+}
+
+function showConsentView() {
+  $authSection.style.display = "none";
+  $accountSection.style.display = "none";
+  $consentSection.style.display = "block";
+}
+
+$consentAcceptBtn?.addEventListener("click", async () => {
+  $consentError.style.display = "none";
+  $consentAcceptBtn.disabled = true;
+  $consentAcceptBtn.textContent = "Saving…";
+
+  try {
+    // One record either way. Accepting the terms is what unblocks; the
+    // marketing answer is carried alongside it, granted or refused.
+    await recordConsent(
+      $consentMarketingCheckbox.checked,
+      "extension:reconsent_prompt",
+    );
+    $consentSection.style.display = "none";
+    showAccountView();
+  } catch (err) {
+    $consentError.textContent =
+      err.message || "Could not save your choice. Try again.";
+    $consentError.style.display = "block";
+  } finally {
+    $consentAcceptBtn.disabled = false;
+    $consentAcceptBtn.textContent = "Accept & Continue";
+  }
+});
+
+$consentSignOutBtn?.addEventListener("click", async () => {
+  await signOut();
+  $consentSection.style.display = "none";
+  showAuthView();
+});
+
+/**
+ * Reflect the stored preference in the account view. Called on every account
+ * load so the checkbox always shows what the server actually holds, not what
+ * this browser last did — the same account may have been changed elsewhere.
+ */
+async function loadConsentPreference() {
+  if (!$accountConsentCheckbox) return;
+  try {
+    const res = await apiRequest("/api/me/consent");
+    if (!res.ok) return;
+    const data = await res.json();
+    $accountConsentCheckbox.checked = !!data.marketing_consent;
+    $accountConsentStatus.textContent = data.marketing_consent_at
+      ? data.marketing_consent
+        ? "Subscribed"
+        : "Not subscribed"
+      : "";
+  } catch (err) {
+    console.warn("Could not load email preference:", err);
+  }
+}
+
+$accountConsentCheckbox?.addEventListener("change", async () => {
+  const granted = $accountConsentCheckbox.checked;
+  $accountConsentCheckbox.disabled = true;
+  $accountConsentStatus.textContent = "Saving…";
+
+  try {
+    // Every toggle writes its own record — grants and withdrawals alike —
+    // so the audit trail shows what changed and when, not just the latest state.
+    await recordConsent(granted, "extension:account_settings");
+    $accountConsentStatus.textContent = granted
+      ? "Subscribed"
+      : "Unsubscribed";
+  } catch (err) {
+    // Revert the control so it never shows a state the server did not accept
+    $accountConsentCheckbox.checked = !granted;
+    $accountConsentStatus.textContent = "Could not save — try again";
+  } finally {
+    $accountConsentCheckbox.disabled = false;
+  }
+});
 
 // ─── Auth View ───────────────────────────────────────────────────────────────
 
@@ -158,11 +319,26 @@ $signUpBtn.addEventListener("click", async () => {
     }
 
     // Not a deleted account — do normal sign up
+    const wantsMarketing = !!$signupConsentCheckbox?.checked;
     const data = await signUp(email, password);
 
     if (!data.access_token) {
+      // No session yet (email confirmation pending) — stash the choice and
+      // write it on first sign-in, so an unconfirmed signup never produces
+      // a consent record against an unverified address.
+      await chrome.storage.local.set({
+        [PENDING_CONSENT_KEY]: wantsMarketing,
+      });
       showSuccess("Check your email to confirm your account, then sign in.");
     } else {
+      try {
+        await recordConsent(wantsMarketing, "extension:signup_checkbox");
+      } catch (err) {
+        // Don't fail the signup over the consent write; retry on next load
+        await chrome.storage.local.set({
+          [PENDING_CONSENT_KEY]: wantsMarketing,
+        });
+      }
       showAccountView();
     }
   } catch (err) {
@@ -324,6 +500,8 @@ async function loadAccountInfo() {
   if (user) {
     $userEmail.textContent = user.email || "Unknown";
   }
+
+  loadConsentPreference();
 
   try {
     const res = await apiRequest("/api/ext/account-status");

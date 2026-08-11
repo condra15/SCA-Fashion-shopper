@@ -217,3 +217,84 @@
   background: #c07090;
   color: white;
 }
+
+/* ─────────────────────────────────────────────
+   Analyze page — consent banner (js/consent-banner.js)
+
+   Sized against the 360x420 hard cap (landmine 4). The popup is already
+   near its vertical budget, so this is kept to ~54px and placed above only
+   the wheel — it pushes decoration below the fold, never a control. Empty
+   until mounted, so it costs nothing on the common path where the account
+   is already consented.
+───────────────────────────────────────────── */
+
+.consent-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 8px 8px 10px;
+  margin-bottom: 6px;
+  border: 1px solid rgba(242, 196, 206, 0.6);
+  border-radius: var(--radius-md);
+  background: var(--blush);
+}
+
+.consent-banner-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.consent-banner-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  cursor: pointer;
+}
+
+.consent-banner-label.is-done {
+  cursor: default;
+}
+
+.consent-banner-checkbox {
+  margin-top: 1px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.consent-banner-text {
+  font-size: 10px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.consent-banner-sub {
+  color: var(--ink-soft);
+  opacity: 0.85;
+}
+
+.consent-banner-error {
+  font-size: 9.5px;
+  line-height: 1.4;
+  margin-top: 4px;
+  color: #b3506e;
+}
+
+.consent-banner-dismiss {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.consent-banner-dismiss:hover {
+  background: rgba(242, 196, 206, 0.55);
+  color: var(--ink);
+}

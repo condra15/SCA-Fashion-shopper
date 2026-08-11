@@ -4,6 +4,7 @@
  */
 
 import { isSignedIn, analyzeColor, apiRequest } from "./auth.js";
+import { initConsentBanner } from "./consent-banner.js";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -101,6 +102,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       window.location.href = "pages/login.html";
     });
   }
+
+  // Deliberately not awaited — the banner is secondary to the analyze flow
+  // and must never delay it. It no-ops for signed-out users and on any error.
+  initConsentBanner();
 
   // Restore last result if available
   const { lastResult } = await chrome.storage.local.get("lastResult");

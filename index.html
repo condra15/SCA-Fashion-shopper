@@ -55,6 +55,11 @@
       <div id="result-empty" class="result-empty">Pick a color to analyze</div>
     </div>
 
+    <!-- Consent banner mounts here (js/consent-banner.js) — below the whole
+         pick-analyze-result flow so it never sits between the button and its
+         result, and above only the decorative wheel. -->
+    <div id="consent-banner-root"></div>
+
     <div class="wheel-wrap">
       <svg id="season-wheel" viewBox="-20 -20 200 200" width="240" height="240">
         <g transform="translate(80,80)">

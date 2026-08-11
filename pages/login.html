@@ -32,6 +32,18 @@
           style="padding: 7px 12px; font-size: 12px; -webkit-text-security: disc; background-image: none;">
       </div>
 
+      <!-- Marketing opt-in for new accounts. Deliberately UNCHECKED:
+           a pre-ticked box is not valid consent (GDPR Recital 32; CJEU
+           Planet49 C-673/17), and it would record everyone who ignored it
+           as consented. Only read on Create Account, not on Sign In. -->
+      <label id="signup-consent-row" style="display: flex; gap: 7px; align-items: flex-start; margin: 8px 2px 6px; cursor: pointer;">
+        <input type="checkbox" id="signup-consent-checkbox" style="margin-top: 2px; flex-shrink: 0;">
+        <span style="font-size: 10px; line-height: 1.45; text-align: left;">
+          Send me seasonal colour guides, new-features, ios-app news, and styling tips.
+          <span style="opacity: 0.7;">A couple of emails a month. Unsubscribe anytime.</span>
+        </span>
+      </label>
+
       <div class="btn-box" style="gap: 6px; margin-bottom: 0;">
         <button id="sign-in-btn" class="find" style="padding: 9px; font-size: 11px; margin-top: 0;">Sign In</button>
         <button id="sign-up-btn" class="btn btn-ghost" style="width: 100%; font-size: 11px; padding: 7px;">Create Account</button>
@@ -56,6 +68,43 @@
     </div>
 
     <!-- ─── Account View (shown when signed in) ─── -->
+    <!-- ── Consent gate ───────────────────────────────────────────────────
+         Shown to signed-in accounts that predate the consent model (no
+         recorded decision). BLOCKS on accepting the updated Terms and
+         Privacy Policy — legitimate, because those documents changed
+         materially. Does NOT block on the marketing checkbox: conditioning
+         access on marketing consent would make that consent invalid
+         (GDPR Art. 7(4) — not freely given). Declining still continues. -->
+    <div id="consent-section" style="display: none;">
+      <h1 class="heading" style="font-size: 18px; margin-bottom: 6px;">We've updated our terms</h1>
+      <p class="page-intro" style="margin-bottom: 10px; font-size: 11px; line-height: 1.5;">
+        Our Terms of Service and Privacy Policy have changed — they now cover accounts,
+        billing, data retention, and email. Please review and accept to continue.
+      </p>
+
+      <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 12px;">
+        <a href="https://essumancreations.com/chrome-extension/terms.html" target="_blank" rel="noopener"
+          style="font-size: 10px;">Terms of Service</a>
+        <a href="https://essumancreations.com/chrome-extension/privacy.html" target="_blank" rel="noopener"
+          style="font-size: 10px;">Privacy Policy</a>
+      </div>
+
+      <label id="consent-marketing-row" style="display: flex; gap: 7px; align-items: flex-start; margin: 0 2px 12px; cursor: pointer;">
+        <input type="checkbox" id="consent-marketing-checkbox" style="margin-top: 2px; flex-shrink: 0;">
+        <span style="font-size: 10px; line-height: 1.45; text-align: left;">
+          Send me seasonal colour guides, new-feature news, and styling tips.
+          <span style="opacity: 0.7;">A couple of emails a month. Unsubscribe anytime — optional, and you can continue either way.</span>
+        </span>
+      </label>
+
+      <div class="btn-box" style="gap: 6px; margin-bottom: 0;">
+        <button id="consent-accept-btn" class="find" style="padding: 9px; font-size: 11px; margin-top: 0;">Accept &amp; Continue</button>
+        <button id="consent-signout-btn" class="btn btn-ghost" style="width: 100%; font-size: 10px; padding: 6px;">Sign out instead</button>
+      </div>
+
+      <p id="consent-error" class="error-text" style="display: none; font-size: 10px; margin-top: 8px;"></p>
+    </div>
+
     <div id="account-section" style="display: none;">
       <h1 class="heading" style="font-size: 20px; margin-bottom: 6px;">Your Account</h1>
 
@@ -73,6 +122,22 @@
           <p id="account-plan" class="account-header-value">—</p>
           <p id="usage-display" class="account-header-sub">—</p>
         </div>
+      </div>
+
+      <!-- Email preferences. This control is what makes the privacy policy's
+           "withdraw consent at any time in the Extension" statement true —
+           without it that claim would be false. Reflects the stored state on
+           load; every change writes an audited consent record. -->
+      <div id="email-prefs" style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.08);">
+        <strong class="account-header-label" style="display: block; margin-bottom: 5px;">Emails</strong>
+        <label id="account-consent-row" style="display: flex; gap: 7px; align-items: flex-start; cursor: pointer;">
+          <input type="checkbox" id="account-consent-checkbox" style="margin-top: 2px; flex-shrink: 0;">
+          <span style="font-size: 10px; line-height: 1.45; text-align: left;">
+            Seasonal colour guides, new-feature news, and styling tips.
+            <span style="opacity: 0.7;">A couple of emails a month. Change this whenever you like.</span>
+          </span>
+        </label>
+        <p id="account-consent-status" style="font-size: 9px; opacity: 0.75; margin: 4px 0 0 24px; min-height: 12px;"></p>
       </div>
 
       <!-- Upgrade section (shown for free users) -->
