@@ -1,0 +1,5 @@
+# Local-only agent config (this repo is public)
+docs/agents/
+
+# Chrome Web Store packages built by scripts/package.sh
+dist/
