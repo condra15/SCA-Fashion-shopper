@@ -25,8 +25,12 @@ No build step — vanilla HTML/JS/CSS loaded unpacked.
 ```
 Load:    chrome://extensions → Developer mode → Load unpacked → repo root
 Reload:  chrome://extensions → refresh icon after changes
-Publish: zip the repo (excluding .git) → Chrome Web Store Developer Dashboard
+Package: scripts/package.sh → dist/SCA-Fashion-shopper-<manifest version>.zip
+Test:    scripts/package.test.sh
+Publish: upload that zip → Chrome Web Store Developer Dashboard
 ```
+
+⚠ **Never zip the folder by hand or with Finder's Compress.** That ships `.git/`, `CLAUDE.md`, `notes.md`, `.DS_Store` and `__MACOSX/` to users; the local 2026-08-11 zip contained all of them. `scripts/package.sh` zips an allowlist (`manifest.json`, `background.js`, `index.html`, `js/`, `style/`, `pages/`, `icons/`) and fails if anything the manifest, the pages or the JS imports reference is missing from the zip. A new top-level runtime file or folder goes in its `runtime=` list.
 
 ⚠ Chrome Web Store search indexes the extension NAME and developer account name, not description text — keyword changes to the description do not affect discoverability.
 
@@ -50,8 +54,22 @@ Same as cleo-api's CLAUDE.md Section 4. Repo-specific additions:
 7. **Existing accounts (~60 as of 2026-08-09; 52 at the 2026-07-22 inventory — the base grows, so re-count rather than quoting this number) have no marketing-consent basis.** They registered under a policy that never mentioned email. Global opt-in means none may receive marketing mail until they affirmatively consent via a one-time prompt — never enrol them by inference from account existence.
 8. **This extension is Featured on the Chrome Web Store — a policy strike costs more here than on an ordinary listing.** Any future addition of affiliate links requires Chrome Web Store disclosure on top of FTC and Amazon requirements. Treat monetization changes to this surface with more caution than the same change would need elsewhere.
 
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues for `condra15/SCA-Fashion-shopper`, managed with the `gh` CLI. ⚠ The repo is public, so issue bodies follow the disclosure rules in `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five default labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Shared glossary: `../kisari-docs/CONTEXT.md`. This repo's own `CONTEXT.md` and `docs/adr/` (created lazily) hold only repo-local terms and decisions; the cross-repo decision logs are `../kisari-docs/decisions.md` and `../kisari-docs/architectural_structure.md`. See `docs/agents/domain.md`.
+
 ## 6. Pointers
 
-Shared docs: `../kisari-docs/` (decisions.md, api_contract.md, known_issues.md, SUGGESTIONS.md, claude-code-kickoffs.md — copy-paste session-starter prompts). If missing, reopen the workspace at the parent directory. Flag conflicts as [STOP] in SUGGESTIONS.md and stop.
+Shared docs: `../kisari-docs/` (decisions.md, api_contract.md, known_issues.md, SUGGESTIONS.md, docs/claude-code-kickoffs.md — copy-paste session-starter prompts). **Start every session in `kisari-workspace/`**, never inside this repo (`../kisari-docs/decisions.md` — Shared Docs). Flag conflicts as [STOP] in SUGGESTIONS.md and stop.
 
-- `../kisari-docs/human-actions.md` — what's Chris's to do at each phase (accounts, payments, external submissions, judgment calls) versus what a session can do on its own
+- `../kisari-docs/kisari-human-actions.md` — what's Chris's to do at each phase (accounts, payments, external submissions, judgment calls) versus what a session can do on its own
